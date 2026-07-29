@@ -15,7 +15,12 @@
  .err{color:#d98b84;font-size:13px;min-height:18px;font-family:'Segoe UI',sans-serif}
  .lock{font-size:34px}
 </style></head><body>
-<div class="gate"><div class="lock">&#128272;</div>
+<div class="gate">
+ <svg viewBox="0 0 100 100" style="width:84px;height:84px" aria-hidden="true">
+   <rect x="4" y="4" width="92" height="92" rx="20" fill="#f6f1e7"/>
+   <rect x="9" y="9" width="82" height="82" rx="16" fill="none" stroke="#9a7b2f" stroke-width="1.6" opacity="0.85"/>
+   <g transform="translate(7,21) scale(0.95)"><path d="M 7 55 C 13 40 20 22 26 15 C 29 12 32 14 31.5 20 C 30 33 28 47 26.5 55 C 26 58.5 27 60.5 29.5 59.5 C 31 59 32.5 57 33.5 54 C 37 44 42.5 30 45 21 C 47 14 51 11 56 12.5 C 62 14.5 64.5 21 63.5 29 C 62 40 60 50 58.5 56 C 58 60 60 61 63.5 58.5 C 67.5 55.5 74 52.5 82 51" fill="none" stroke="#7d2e2a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+ </svg>
  <h1>WESSLING FAMILY ARCHIVE</h1>
  <p>Privates Familienarchiv — Zugang nur mit Passwort.<br>Private family archive — password required.<br>Prywatne archiwum rodzinne — wymagane has&#322;o.</p>
  <input id="pw" type="password" placeholder="Passwort / password / hasło" onkeydown="if(event.key===&#39;Enter&#39;)unlock()" autofocus="">
