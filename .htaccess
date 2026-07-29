@@ -1,0 +1,6 @@
+# Immer die aktuelle Archivfassung ausliefern (kein veralteter Browser-Cache)
+<IfModule mod_headers.c>
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
