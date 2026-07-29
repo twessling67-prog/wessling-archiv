@@ -1,0 +1,13 @@
+{
+  "name": "Wessling Familienarchiv",
+  "short_name": "Archiv",
+  "description": "Privates Familienarchiv der Familie Wessling",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f1e7",
+  "theme_color": "#2e2418",
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
