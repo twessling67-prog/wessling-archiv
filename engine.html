@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wessling-Archiv — Prototyp</title>
+<title>Wessling Familienarchiv · Wessling Family Archive</title>
 <style>
   :root{
     --paper:#f6f1e7; --paper-deep:#efe7d7; --card:#fdfaf3;
@@ -109,6 +109,20 @@
   .tabs button{font-size:12.5px;border:1px solid var(--line);border-bottom:none;background:var(--paper-deep);
     padding:6px 14px;cursor:pointer;border-radius:5px 5px 0 0;color:var(--ink-soft)}
   .tabs button.active{background:var(--card);font-weight:700;color:var(--accent)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:18px 0 26px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 10px;text-align:center;cursor:pointer;box-shadow:var(--shadow)}
+  .stat b{display:block;font-size:26px;color:var(--accent);font-family:Georgia,serif}
+  .stat span{font-family:var(--sans);font-size:12px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em}
+  .srcbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 18px;font-family:var(--sans)}
+  .srcbar input[type=text]{flex:1 1 180px;min-width:150px;font-size:13.5px;padding:7px 10px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink)}
+  .srcbar select{font-size:13px;padding:7px 8px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink);max-width:170px}
+  .srcbar .lbl{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:2px}
+  .pagenav{display:flex;gap:8px;align-items:center;margin:16px 0 0;font-family:var(--sans)}
+  .pagenav button{font-size:14px;border:1px solid var(--line);background:var(--card);border-radius:5px;padding:6px 12px;cursor:pointer;color:var(--ink)}
+  .pagenav button:disabled{opacity:.35;cursor:default}
+  .pagenav select{font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink);max-width:220px}
+  .badge.newb{background:var(--accent);color:#f6ecdd}
+  @media(max-width:640px){nav.main button{font-size:12px;padding:7px 7px}.stats{grid-template-columns:repeat(3,1fr)}}
   .transcript{white-space:pre-wrap;font-size:15.5px;line-height:1.75}
   .transcript .unc{background:#f4e6c8;border-radius:2px;padding:0 2px;cursor:help}
   .transcript .mention{color:var(--accent);border-bottom:1px dotted var(--accent-soft);cursor:pointer}
@@ -260,6 +274,30 @@ const UI={
     pl:'Listy, pamiętniki, albumy i dokumenty rodzin Wessling, Adams, Peters, Ballin, Ganz i Mayer — przepisane, przetłumaczone, zindeksowane i wzajemnie powiązane. Każdą wspomnianą osobę można wyszukać, a każde stwierdzenie ma odnośnik do źródła.'},
   strandsTitle:{de:'Familienstränge',en:'Family lines',pl:'Linie rodzinne'},
   recent:{de:'Zuletzt erfasst',en:'Recently added',pl:'Ostatnio dodane'},
+  recentSub:{de:'Die neuesten Quellen im Archiv',en:'The newest sources in the archive',pl:'Najnowsze źródła w archiwum'},
+  statPersons:{de:'Personen',en:'People',pl:'Osoby'},
+  statSources:{de:'Quellen',en:'Sources',pl:'Źródła'},
+  statPagesLbl:{de:'Textseiten',en:'Text pages',pl:'Strony tekstu'},
+  statEvents:{de:'Ereignisse',en:'Events',pl:'Wydarzenia'},
+  statPhotos:{de:'Fotos',en:'Photos',pl:'Fotografie'},
+  addedOn:{de:'erfasst',en:'added',pl:'dodano'},
+  newBadge:{de:'NEU',en:'NEW',pl:'NOWE'},
+  srchPh:{de:'Quellen durchsuchen…',en:'Search sources…',pl:'Przeszukaj źródła…'},
+  fltPerson:{de:'Person',en:'Person',pl:'Osoba'},
+  fltType:{de:'Medium',en:'Medium',pl:'Medium'},
+  fltDecade:{de:'Zeit',en:'Period',pl:'Okres'},
+  fltStatus:{de:'Status',en:'Status',pl:'Status'},
+  fltAll:{de:'Alle',en:'All',pl:'Wszystkie'},
+  sortLbl:{de:'Sortierung',en:'Sort by',pl:'Sortuj'},
+  sortNew:{de:'Neu zuerst',en:'Newest first',pl:'Najnowsze'},
+  sortChron:{de:'Chronologisch',en:'Chronological',pl:'Chronologicznie'},
+  sortTitle:{de:'Titel A–Z',en:'Title A–Z',pl:'Tytuł A–Z'},
+  sortSig:{de:'Signatur',en:'Shelfmark',pl:'Sygnatura'},
+  fltReset:{de:'Zurücksetzen',en:'Reset',pl:'Wyczyść'},
+  noHits:{de:'Keine Quellen für diese Auswahl.',en:'No sources match this selection.',pl:'Brak źródeł dla tego wyboru.'},
+  hitCount:{de:'Quellen',en:'sources',pl:'źródeł'},
+  pageOf:{de:'von',en:'of',pl:'z'},
+  einShort:{de:'Neue Quelle einreichen — Upload, E-Mail oder Meldekarte',en:'Submit a new source — upload, e-mail or intake card',pl:'Zgłoś nowe źródło — przesyłanie, e-mail lub karta'},
   personsSub:{de:'Alle im Archiv erfassten und erwähnten Personen',en:'Everyone recorded or mentioned in the archive',pl:'Wszystkie osoby ujęte lub wspomniane w archiwum'},
   sourcesSub:{de:'Der Quellenfundus: Originale, Transkripte, Übersetzungen',en:'The source collection: originals, transcripts, translations',pl:'Zbiór źródeł: oryginały, transkrypcje, tłumaczenia'},
   timelineSub:{de:'Belegte Ereignisse aus allen Quellen',en:'Documented events from all sources',pl:'Udokumentowane wydarzenia ze wszystkich źródeł'},
@@ -378,6 +416,8 @@ function statusBadge(st){const m={done:'ok',review:'rough',rough:'rough'};return
 
 /* ---------- views ---------- */
 function vHome(){
+  const pages=SOURCES.reduce((n,s)=>n+s.pages.length,0);
+  const recent=[...SOURCES].sort((a,b)=>(b.added||'').localeCompare(a.added||'')).slice(0,6);
   return `<div class="hero">
     <div class="welcome"><h2 class="page">${t(UI.welcome)}</h2><p>${t(UI.welcomeText)}</p>
       <div class="chips" style="margin-top:16px">${chipTags(Object.keys(TAGS))}</div></div>
@@ -386,14 +426,25 @@ function vHome(){
         const n=PERSONS.filter(p=>p.strand.includes(st)).length;
         return `<div class="strand-row" onclick="go('persons',null,'${st}')"><b>${t(STRANDS[st])}</b><span>${n} ${t(UI.inPersons)}</span></div>`;}).join('')}
       </div></div></div>
-    <h3 style="font-weight:normal;margin-bottom:12px">${t(UI.recent)}</h3>
-    <div class="grid cols3">${SOURCES.map(cardSource).join('')}</div>`;
+    <div class="stats">
+      <div class="stat" onclick="go('persons')"><b>${PERSONS.length}</b><span>${t(UI.statPersons)}</span></div>
+      <div class="stat" onclick="go('sources')"><b>${SOURCES.length}</b><span>${t(UI.statSources)}</span></div>
+      <div class="stat" onclick="go('sources')"><b>${pages}</b><span>${t(UI.statPagesLbl)}</span></div>
+      <div class="stat" onclick="go('timeline')"><b>${EVENTS.length}</b><span>${t(UI.statEvents)}</span></div>
+      <div class="stat" onclick="go('persons')"><b>${(window.PHOTOS||[]).length}</b><span>${t(UI.statPhotos)}</span></div>
+    </div>
+    <h3 style="font-weight:normal;margin-bottom:2px">${t(UI.recent)}</h3>
+    <div class="page-sub" style="margin-bottom:12px">${t(UI.recentSub)}</div>
+    <div class="grid cols3">${recent.map(cardSource).join('')}</div>`;
 }
+function fmtAdded(a){if(!a)return'';const p=a.split('-');return p[2].replace(/^0/,'')+'.'+p[1].replace(/^0/,'')+'.'+p[0];}
+function isNewest(s){const mx=SOURCES.reduce((m,x)=>(x.added||'')>m?x.added:m,'');return s.added===mx;}
 function cardSource(s){
-  return `<div class="card"><div class="meta"><span class="badge type">${t(s.type)}</span> &nbsp;${s.sig} &nbsp;·&nbsp; ${s.date} &nbsp;${statusBadge(s.status)}</div>
+  return `<div class="card"><div class="meta"><span class="badge type">${t(s.type)}</span> &nbsp;${s.sig} &nbsp;·&nbsp; ${s.date} &nbsp;${statusBadge(s.status)}${isNewest(s)?` <span class="badge newb">${t(UI.newBadge)}</span>`:''}</div>
     <h3><a onclick="go('source','${s.id}')">${t(s.title)}</a></h3>
     <p style="font-size:14px;color:var(--ink-soft)">${t(s.summary)}</p>
-    <div class="chips">${chipTags(s.tags)}</div></div>`;
+    <div class="chips">${chipTags(s.tags)}</div>
+    ${s.added?`<div class="meta" style="margin-top:8px">${t(UI.addedOn)} ${fmtAdded(s.added)} · ${s.pages.length} ${t(UI.statPagesLbl)}</div>`:''}</div>`;
 }
 function cardPerson(p){
   const dates=(p.born!=='?'?`${t(UI.born)} ${p.born}`:'')+(p.died&&p.died!=='?'?` · ${t(UI.died)} ${p.died}`:'');
@@ -445,10 +496,48 @@ function famBoxHtml(id){
     ${row(t(UI.fam.parents),r.par)}${row(t(UI.fam.spouses),r.spo)}${row(t(UI.fam.siblings),r.sib)}${row(t(UI.fam.children),r.chi)}</dl>
     <div style="margin-top:8px"><a onclick="go('tree','${id}')" style="font-size:12.5px">→ ${t(UI.nav.tree)}</a></div></div>`;
 }
+let SRCF={q:'',person:'',type:'',decade:'',status:'',sort:'new'};
+function srcYear(s){const m=(s.date||'').match(/(1[89]\d\d|20\d\d)/);return m?parseInt(m[1],10):null;}
+function srcPersonIds(s){const ids=new Set();if(s.author)ids.add(s.author);if(s.addressee)ids.add(s.addressee);
+  s.pages.forEach(pg=>{let m;const re=/data-p="([^"]+)"/g;while((m=re.exec(pg.dipl)))ids.add(m[1]);});return ids;}
+function setSrcF(k,v){SRCF[k]=v;render();}
+function srcFReset(){SRCF={q:'',person:'',type:'',decade:'',status:'',sort:'new'};render();}
 function vSources(){
+  const opts=(sel,arr)=>arr.map(o=>`<option value="${o.v}" ${sel===o.v?'selected':''}>${o.l}</option>`).join('');
+  const personSet=new Map();
+  SOURCES.forEach(s=>srcPersonIds(s).forEach(id=>{const p=P(id);if(p)personSet.set(id,p.name);}));
+  const personOpts=[{v:'',l:t(UI.fltAll)}].concat([...personSet.entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([v,l])=>({v,l})));
+  const typeOpts=[{v:'',l:t(UI.fltAll)}].concat([...new Set(SOURCES.map(s=>t(s.type)))].sort().map(x=>({v:x,l:x})));
+  const decs=[...new Set(SOURCES.map(srcYear).filter(Boolean).map(y=>Math.floor(y/10)*10))].sort((a,b)=>a-b);
+  const decOpts=[{v:'',l:t(UI.fltAll)}].concat(decs.map(x=>({v:String(x),l:x+'er'})));
+  const stOpts=[{v:'',l:t(UI.fltAll)}].concat([...new Set(SOURCES.map(s=>s.status))].map(x=>({v:x,l:t(UI.statusMap[x]||{de:x})})));
+  let list=SOURCES.filter(s=>{
+    if(SRCF.person&&!srcPersonIds(s).has(SRCF.person))return false;
+    if(SRCF.type&&t(s.type)!==SRCF.type)return false;
+    if(SRCF.decade&&String(Math.floor((srcYear(s)||0)/10)*10)!==SRCF.decade)return false;
+    if(SRCF.status&&s.status!==SRCF.status)return false;
+    if(SRCF.q){const q=SRCF.q.toLowerCase();const hay=(t(s.title)+' '+t(s.summary)+' '+s.sig+' '+s.tags.join(' ')).toLowerCase();if(!hay.includes(q))return false;}
+    return true;});
+  list=list.sort((a,b)=>SRCF.sort==='chron'?(srcYear(a)||9999)-(srcYear(b)||9999)
+    :SRCF.sort==='title'?t(a.title).localeCompare(t(b.title))
+    :SRCF.sort==='sig'?a.sig.localeCompare(b.sig)
+    :(b.added||'').localeCompare(a.added||''));
+  const active=SRCF.q||SRCF.person||SRCF.type||SRCF.decade||SRCF.status;
   return `<h2 class="page">${t(UI.nav.sources)}</h2><div class="page-sub">${t(UI.sourcesSub)}</div>
-    <div class="card" style="border-left:5px solid var(--gold);margin-bottom:22px">
-      <h3>📥 ${t(UI.einTitle)}</h3>
+    <div class="srcbar">
+      <input type="text" value="${esc(SRCF.q)}" placeholder="${t(UI.srchPh)}" oninput="SRCF.q=this.value;render();var el=document.querySelector('.srcbar input');el.focus();el.setSelectionRange(el.value.length,el.value.length)">
+      <span><span class="lbl">${t(UI.fltPerson)}</span><select onchange="setSrcF('person',this.value)">${opts(SRCF.person,personOpts)}</select></span>
+      <span><span class="lbl">${t(UI.fltType)}</span><select onchange="setSrcF('type',this.value)">${opts(SRCF.type,typeOpts)}</select></span>
+      <span><span class="lbl">${t(UI.fltDecade)}</span><select onchange="setSrcF('decade',this.value)">${opts(SRCF.decade,decOpts)}</select></span>
+      <span><span class="lbl">${t(UI.fltStatus)}</span><select onchange="setSrcF('status',this.value)">${opts(SRCF.status,stOpts)}</select></span>
+      <span><span class="lbl">${t(UI.sortLbl)}</span><select onchange="setSrcF('sort',this.value)">${opts(SRCF.sort,[{v:'new',l:t(UI.sortNew)},{v:'chron',l:t(UI.sortChron)},{v:'title',l:t(UI.sortTitle)},{v:'sig',l:t(UI.sortSig)}])}</select></span>
+      ${active?`<button class="propose" onclick="srcFReset()">✕ ${t(UI.fltReset)}</button>`:''}
+      <span class="meta">${list.length} ${t(UI.hitCount)}</span>
+    </div>
+    ${list.length?`<div class="grid cols3">${list.map(cardSource).join('')}</div>`:`<p class="empty">${t(UI.noHits)}</p>`}
+    <details class="card" style="border-left:5px solid var(--gold);margin-top:24px">
+      <summary style="cursor:pointer;font-family:var(--sans);font-size:14px;font-weight:600">📥 ${t(UI.einShort)}</summary>
+      <h3 style="margin-top:12px">${t(UI.einTitle)}</h3>
       <div class="meta" style="margin-top:10px">${t(UI.einWayB)}</div>
       <p style="font-size:14px;color:var(--ink-soft);margin:4px 0 8px">${t(UI.einFamText)}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
@@ -462,8 +551,8 @@ function vSources(){
           ${efield('q_title',UI.einT1,'')}${efield('q_type',UI.einT2,'')}${efield('q_date',UI.einT3,'')}
           ${efield('q_prov',UI.einT4,'')}${earea('q_note',UI.einT5,'',3)}
           <div style="margin-top:12px"><button class="btn" onclick="einDownload()">⬇ ${t(UI.einBtn)}</button></div>
-        </div></details></div>
-    <div class="grid cols3">${SOURCES.map(cardSource).join('')}</div>`;
+        </div></details>
+    </details>`;
 }
 function fakeScan(){
   let lines='';
@@ -495,7 +584,11 @@ function vSource(id,extra){
     : tab==='en'?`<div class="transcript">${pg.read.en?esc(pg.read.en):t(UI.translMissing)}</div>`
     : `<div class="transcript">${pg.read.pl?esc(pg.read.pl):t(UI.translMissing)}</div>`;
   const tabBtn=(key,label)=>`<button class="${tab===key?'active':''}" onclick="go('source','${id}','${key}:${pi}')">${label}</button>`;
-  const pageNav=s.pages.length>1?`<div class="filterbar" style="margin:16px 0 0">${s.pages.map((p,i)=>`<button class="${i===pi?'active':''}" onclick="go('source','${id}','${tab}:${i}')">${p.label||t(UI.page)+' '+p.n}</button>`).join('')}</div>`:'';
+  const pageNav=s.pages.length>1?`<div class="pagenav">
+    <button ${pi===0?'disabled':''} onclick="go('source','${id}','${tab}:${pi-1}')">←</button>
+    <select onchange="go('source','${id}','${tab}:'+this.value)">${s.pages.map((p,i)=>`<option value="${i}" ${i===pi?'selected':''}>${p.label||t(UI.page)+' '+p.n}</option>`).join('')}</select>
+    <span class="meta">${pi+1} ${t(UI.pageOf)} ${s.pages.length}</span>
+    <button ${pi===s.pages.length-1?'disabled':''} onclick="go('source','${id}','${tab}:${pi+1}')">→</button></div>`:'';
   return `<a class="backlink" onclick="go('sources')">← ${t(UI.nav.sources)}</a>
   <div class="detail-head"><div><h2 class="page">${t(s.title)}</h2>
     <div class="page-sub"><span class="badge type">${t(s.type)}</span> &nbsp;${statusBadge(s.status)}</div></div>
