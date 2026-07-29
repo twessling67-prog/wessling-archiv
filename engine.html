@@ -123,6 +123,9 @@
   .pagenav select{font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink);max-width:220px}
   .badge.newb{background:var(--accent);color:#f6ecdd}
   mark{background:#f0dfa3;color:inherit;padding:0 2px;border-radius:2px}
+  .tl-dec{font-family:var(--sans);font-size:12px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase;margin:22px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px;list-style:none}
+  .tl-life h4{font-weight:normal;font-size:14.5px;margin:0}
+  .tl-life{padding:2px 0}
   .result-hit{margin-bottom:10px;cursor:pointer;transition:border-color .15s}
   .result-hit:hover{border-color:var(--accent)}
   @media(max-width:640px){nav.main button{font-size:12px;padding:7px 7px}.stats{grid-template-columns:repeat(3,1fr)}}
@@ -309,6 +312,10 @@ const UI={
   einShort:{de:'Neue Quelle einreichen — Upload, E-Mail oder Meldekarte',en:'Submit a new source — upload, e-mail or intake card',pl:'Zgłoś nowe źródło — przesyłanie, e-mail lub karta'},
   personsSub:{de:'Alle im Archiv erfassten und erwähnten Personen',en:'Everyone recorded or mentioned in the archive',pl:'Wszystkie osoby ujęte lub wspomniane w archiwum'},
   sourcesSub:{de:'Der Quellenfundus: Originale, Transkripte, Übersetzungen',en:'The source collection: originals, transcripts, translations',pl:'Zbiór źródeł: oryginały, transkrypcje, tłumaczenia'},
+  tlAll:{de:'Alles',en:'All',pl:'Wszystko'},
+  tlEvents:{de:'Ereignisse aus Quellen',en:'Events from sources',pl:'Wydarzenia ze źródeł'},
+  tlLife:{de:'Geburten & Todesfälle',en:'Births & deaths',pl:'Urodzenia i zgony'},
+  tlLifeNote:{de:'Lebensdaten automatisch aus dem Stammbaum (ab 1800)',en:'Life dates drawn automatically from the family tree (from 1800)',pl:'Daty życia automatycznie z drzewa (od 1800)'},
   timelineSub:{de:'Belegte Ereignisse aus allen Quellen',en:'Documented events from all sources',pl:'Udokumentowane wydarzenia ze wszystkich źródeł'},
   treeSub:{de:'Familien-Browser aus dem Stammbaum [Q-GED-01] — 311 Personen, 130 Familien. Karte anklicken, um die Person ins Zentrum zu holen.',en:'Family browser built from the tree [Q-GED-01] — 311 people, 130 families. Click a card to bring that person into focus.',pl:'Przeglądarka rodzin z drzewa [Q-GED-01] — 311 osób, 130 rodzin. Kliknij kartę, aby ustawić osobę w centrum.'},
   strandsSub:{de:'Kuratierte Geschichten quer durch die Quellen',en:'Curated stories across the sources',pl:'Wybrane opowieści łączące źródła'},
@@ -619,12 +626,56 @@ function vSource(id,extra){
     <div><div class="tabs">${tabBtn('dipl',t(UI.tabDipl))}${tabBtn('read',t(UI.tabRead))}${tabBtn('en',t(UI.tabEN))}${tabBtn('pl',t(UI.tabPL))}</div>${body}</div>
   </div>`;
 }
+const GMON={jan:1,feb:2,mar:3,'mär':3,'maer':3,mrz:3,apr:4,may:5,mai:6- 1,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,okt:10,nov:11,dec:12,dez:12,'déc':12,'dec.':12};
+function parseGedDate(s){
+  if(!s||s==='?')return null;
+  s=String(s).trim().replace(/^abt\.?\s*/i,'').replace(/^ca\.?\s*/i,'').replace(/^about\s*/i,'');
+  let m=s.match(/^(\d{1,2})\.?\s+([A-Za-zÀ-ž.]+)\s+(\d{4})$/);
+  if(m){const mo=GMON[m[2].toLowerCase().slice(0,4)]||GMON[m[2].toLowerCase().slice(0,3)];
+    if(mo)return {iso:m[3]+'-'+String(mo).padStart(2,'0')+'-'+m[1].padStart(2,'0'),disp:parseInt(m[1],10)+'.'+mo+'.'+m[3]};}
+  m=s.match(/^([A-Za-zÀ-ž.]+)\s+(\d{4})$/);
+  if(m){const mo=GMON[m[1].toLowerCase().slice(0,4)]||GMON[m[1].toLowerCase().slice(0,3)];
+    if(mo)return {iso:m[2]+'-'+String(mo).padStart(2,'0'),disp:mo+'/'+m[2]};}
+  m=s.match(/(\d{4})/);
+  if(m)return {iso:m[1],disp:m[1]};
+  return null;
+}
+function lifeEvents(){
+  const out=[];
+  PERSONS.forEach(p=>{
+    const b=parseGedDate(p.born), dd=parseGedDate(p.died);
+    if(b&&parseInt(b.iso.slice(0,4),10)>=1800)out.push({iso:b.iso,disp:b.disp,kind:'life',sym:'✳',pid:p.id,name:p.name});
+    if(dd&&parseInt(dd.iso.slice(0,4),10)>=1800)out.push({iso:dd.iso,disp:dd.disp,kind:'life',sym:'✝',pid:p.id,name:p.name});
+  });
+  return out;
+}
+let TLF='all';
+function setTlf(v){TLF=v;render();}
 function vTimeline(){
-  const evs=[...EVENTS].sort((a,b)=>a.date.localeCompare(b.date));
-  return `<h2 class="page">${t(UI.nav.timeline)}</h2><div class="page-sub">${t(UI.timelineSub)}</div>
-  <ul class="timeline">${evs.map(e=>`<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p>
-    <div class="chips">${e.persons.map(pid=>`<span class="chip" onclick="go('person','${pid}')">${P(pid).name}</span>`).join('')}
-    ${e.sources.map(sid=>`<span class="chip" style="color:var(--gold)" onclick="go('source','${sid}')">${S(sid).sig}</span>`).join('')}</div></li>`).join('')}</ul>`;
+  const evs=EVENTS.map(e=>({iso:e.date,disp:e.date,kind:'event',e}));
+  const life=lifeEvents();
+  let items=TLF==='event'?evs:TLF==='life'?life:evs.concat(life);
+  items.sort((a,b)=>a.iso.localeCompare(b.iso));
+  let lastDec=null, html='';
+  items.forEach(it=>{
+    const dec=Math.floor(parseInt(it.iso.slice(0,4),10)/10)*10;
+    if(dec!==lastDec){lastDec=dec;html+=`<h3 class="tl-dec">${dec}er</h3>`;}
+    if(it.kind==='event'){
+      const e=it.e;
+      html+=`<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p>
+      <div class="chips">${e.persons.map(pid=>P(pid)?`<span class="chip" onclick="go('person','${pid}')">${P(pid).name}</span>`:'').join('')}
+      ${e.sources.map(sid=>S(sid)?`<span class="chip" style="color:var(--gold)" onclick="go('source','${sid}')">${S(sid).sig}</span>`:'').join('')}</div></li>`;
+    } else {
+      html+=`<li class="tl-life"><div class="tl-date">${it.disp}</div><h4>${it.sym} <a onclick="go('person','${it.pid}')">${it.name}</a></h4></li>`;
+    }
+  });
+  return `<h2 class="page">${t(UI.nav.timeline)}</h2><div class="page-sub">${t(UI.timelineSub)} · ${t(UI.tlLifeNote)}</div>
+  <div class="filterbar">
+    <button class="${TLF==='all'?'active':''}" onclick="setTlf('all')">${t(UI.tlAll)}</button>
+    <button class="${TLF==='event'?'active':''}" onclick="setTlf('event')">${t(UI.tlEvents)} (${evs.length})</button>
+    <button class="${TLF==='life'?'active':''}" onclick="setTlf('life')">${t(UI.tlLife)} (${life.length})</button>
+  </div>
+  <ul class="timeline">${html}</ul>`;
 }
 let TH=[];
 function treeGo(id){
