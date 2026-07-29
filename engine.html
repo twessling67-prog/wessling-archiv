@@ -122,6 +122,9 @@
   .pagenav button:disabled{opacity:.35;cursor:default}
   .pagenav select{font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink);max-width:220px}
   .badge.newb{background:var(--accent);color:#f6ecdd}
+  mark{background:#f0dfa3;color:inherit;padding:0 2px;border-radius:2px}
+  .result-hit{margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+  .result-hit:hover{border-color:var(--accent)}
   @media(max-width:640px){nav.main button{font-size:12px;padding:7px 7px}.stats{grid-template-columns:repeat(3,1fr)}}
   .transcript{white-space:pre-wrap;font-size:15.5px;line-height:1.75}
   .transcript .unc{background:#f4e6c8;border-radius:2px;padding:0 2px;cursor:help}
@@ -191,7 +194,7 @@
     <div class="head-tools">
       <div class="search-wrap">
         <span class="icon">&#128269;</span>
-        <input id="searchInput" type="text" onkeydown="if(event.key==='Enter')doSearch()">
+        <input id="searchInput" type="text" list="searchSugg" onkeydown="if(event.key==='Enter')doSearch()"><datalist id="searchSugg"></datalist>
       </div>
       <div class="lang-switch" id="langSwitch"></div>
       <button class="propose" title="Admin" onclick="adminToggle()">⚙</button>
@@ -269,6 +272,11 @@ const UI={
   einUpload:{de:'Zum Upload-Link',en:'Open upload link',pl:'Link do przesyłania'},
   einMail:{de:'Per E-Mail senden',en:'Send by e-mail',pl:'Wyślij e-mailem'},
   searchPh:{de:'Archiv durchsuchen …',en:'Search the archive …',pl:'Przeszukaj archiwum …'},
+  hits:{de:'Fundstellen',en:'Passages',pl:'Miejsca w tekstach'},
+  hitAsMention:{de:'als Person verlinkt',en:'linked as person',pl:'oznaczona osoba'},
+  hitInTab:{de:'in Fassung',en:'in version',pl:'w wersji'},
+  meantAlso:{de:'Passende Personen',en:'Matching people',pl:'Pasujące osoby'},
+  searchTip:{de:'Tipp: mehrere Wörter = alle müssen vorkommen; Umlaute egal; Klick auf eine Fundstelle springt direkt zur Textstelle.',en:'Tip: several words = all must occur; umlauts ignored; a hit jumps straight to the passage.',pl:'Wskazówka: kilka słów = wszystkie muszą wystąpić; znaki diakrytyczne bez znaczenia; kliknięcie przenosi wprost do fragmentu.'},
   welcome:{de:'Willkommen im Familienarchiv',en:'Welcome to the family archive',pl:'Witamy w archiwum rodzinnym'},
   welcomeText:{de:'Briefe, Tagebücher, Alben und Dokumente der Familien Wessling, Adams, Peters, Ballin, Ganz und Mayer — transkribiert, übersetzt, verschlagwortet und miteinander verknüpft. Jede erwähnte Person ist nachschlagbar, jede Aussage belegt.',
     en:'Letters, diaries, albums and documents of the Wessling, Adams, Peters, Ballin, Ganz and Mayer families — transcribed, translated, indexed and interlinked. Every person mentioned can be looked up; every statement cites its source.',
@@ -396,7 +404,7 @@ function go(name,id,extra){VIEW={name,id,extra};render();window.scrollTo(0,0);}
 
 function renderTranscript(dipl){
   return esc(dipl)
-    .replace(/&lt;m data-p="([a-z\-]+)"&gt;([\s\S]*?)&lt;\/m&gt;/g,
+    .replace(/&lt;m data-p="([\w\-]+)"&gt;([\s\S]*?)&lt;\/m&gt;/g,
       (_,p,txt)=>`<span class="mention" onclick="go('person','${p}')">${txt}</span>`)
     .replace(/&lt;u title="([^"]*)"&gt;([\s\S]*?)&lt;\/u&gt;/g,
       (_,ti,txt)=>`<span class="unc" title="${ti}">${txt}</span>`);
@@ -580,10 +588,10 @@ function vSource(id,extra){
   const pi=Math.max(0,Math.min(parseInt(parts[1]||'0',10)||0,s.pages.length-1));
   const pg=s.pages[pi];
   const meta=UI.srcMeta;
-  const body= tab==='dipl'?`<div class="transcript">${renderTranscript(pg.dipl)}</div><div class="note">${t(UI.uncNote)}</div>`
-    : tab==='read'?`<div class="transcript">${esc(pg.read.de)}</div>`
-    : tab==='en'?`<div class="transcript">${pg.read.en?esc(pg.read.en):t(UI.translMissing)}</div>`
-    : `<div class="transcript">${pg.read.pl?esc(pg.read.pl):t(UI.translMissing)}</div>`;
+  const body= tab==='dipl'?`<div class="transcript">${markify(renderTranscript(pg.dipl),HLQ)}</div><div class="note">${t(UI.uncNote)}</div>`
+    : tab==='read'?`<div class="transcript">${markify(esc(pg.read.de),HLQ)}</div>`
+    : tab==='en'?`<div class="transcript">${pg.read.en?markify(esc(pg.read.en),HLQ):t(UI.translMissing)}</div>`
+    : `<div class="transcript">${pg.read.pl?markify(esc(pg.read.pl),HLQ):t(UI.translMissing)}</div>`;
   const tabBtn=(key,label)=>`<button class="${tab===key?'active':''}" onclick="go('source','${id}','${key}:${pi}')">${label}</button>`;
   const pageNav=s.pages.length>1?`<div class="pagenav">
     <button ${pi===0?'disabled':''} onclick="go('source','${id}','${tab}:${pi-1}')">←</button>
@@ -678,23 +686,73 @@ function hl(text,q){
   return (a>0?'… ':'')+esc(text.slice(a,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length,i+q.length+90))+' …';
 }
 function vSearch(q){
-  const ql=q.toLowerCase();
-  const pHits=PERSONS.filter(p=>(p.name+' '+p.nameForms+' '+stripHtml(t(p.bio))).toLowerCase().includes(ql));
-  const sHits=[];
-  SOURCES.forEach(s=>{
-    let hay=t(s.title)+' '+t(s.summary)+' '+s.sig;
-    s.pages.forEach(pg=>{hay+=' '+stripHtml(pg.dipl)+' '+pg.read.de+' '+pg.read.en+' '+pg.read.pl;});
-    if(hay.toLowerCase().includes(ql))sHits.push({s,hay});
-  });
-  const eHits=EVENTS.filter(e=>(t(e.title)+' '+t(e.text)).toLowerCase().includes(ql));
-  const none=!pHits.length&&!sHits.length&&!eHits.length;
-  return `<h2 class="page">${t(UI.results)} „${esc(q)}"</h2><div class="page-sub"></div>
+  const ts=terms(q);
+  const qn=norm(q);
+  // 1) Personen (Name, Namensformen, Bio) — inkl. Teilwort (Anne -> Anne-Christina)
+  const pHits=PERSONS.filter(p=>matchAll(norm(p.name+' '+(p.nameForms||'')),ts));
+  const pIds=new Set(PERSONS.filter(p=>matchAll(norm(p.name),ts)).map(p=>p.id));
+  // 2) Fundstellen auf Seitenebene: Text ODER Personen-Markierung einer Trefferperson
+  const hits=[];
+  SOURCES.forEach(s=>s.pages.forEach((pg,pi)=>{
+    const dipl=stripHtml(pg.dipl);
+    const fields=[['dipl',dipl],['read',pg.read.de||''],['en',pg.read.en||''],['pl',pg.read.pl||'']];
+    let best=null;
+    for(const [tab,txt] of fields){ if(txt&&matchAll(norm(txt),ts)){best={tab,txt};break;} }
+    let viaMention=false;
+    if(!best){
+      for(const id of pIds){ if(pg.dipl.includes('data-p="'+id+'"')){viaMention=true;best={tab:'dipl',txt:dipl};break;} }
+    }
+    if(best)hits.push({s,pg,pi,tab:best.tab,snippet:snippetOf(best.txt,viaMention?'':q),viaMention});
+  }));
+  hits.sort((a,b)=>((b.s.added||'').localeCompare(a.s.added||''))||a.pi-b.pi);
+  // 3) Quellen (nur Titel/Zusammenfassung) ohne Seitentreffer
+  const sMeta=SOURCES.filter(s=>matchAll(norm(t(s.title)+' '+t(s.summary)+' '+s.sig),ts)&&!hits.some(h=>h.s.id===s.id));
+  // 4) Ereignisse
+  const eHits=EVENTS.filter(e=>matchAll(norm(t(e.title)+' '+t(e.text)),ts));
+  const none=!pHits.length&&!hits.length&&!sMeta.length&&!eHits.length;
+  const HMAX=80;
+  return `<h2 class="page">${t(UI.results)} „${esc(q)}"</h2>
+  <div class="page-sub">${t(UI.searchTip)}</div>
+  ${pHits.length?`<div class="result-block" style="margin-bottom:6px"><div class="meta" style="margin-bottom:6px">${t(UI.meantAlso)}</div><div class="chips">${pHits.slice(0,12).map(p=>`<span class="chip strand" onclick="go('person','${p.id}')">${p.name}</span>`).join('')}</div></div>`:''}
   ${none?`<p class="empty">${t(UI.noResults)}</p>`:''}
-  ${pHits.length?`<div class="result-block"><h3>${t(UI.inPersons)}</h3><div class="grid cols3">${pHits.map(cardPerson).join('')}</div></div>`:''}
-  ${sHits.length?`<div class="result-block"><h3>${t(UI.inSources)}</h3>${sHits.map(h=>`<div class="card" style="margin-bottom:12px"><h3><a onclick="go('source','${h.s.id}')">${t(h.s.title)}</a></h3><p style="font-size:14px;color:var(--ink-soft)">${hl(h.hay,q)}</p></div>`).join('')}</div>`:''}
+  ${hits.length?`<div class="result-block"><h3>${t(UI.hits)} (${hits.length})</h3>
+    ${hits.slice(0,HMAX).map(h=>`<div class="card result-hit" onclick="goHit('${h.s.id}',${h.pi},'${esc(q).replace(/'/g,'')}')">
+      <div class="meta">${t(h.s.type)} · ${h.s.sig} · <b>${h.pg.label||t(UI.page)+' '+h.pg.n}</b>${h.viaMention?` · <span class="badge ok">${t(UI.hitAsMention)}</span>`:''}${h.tab!=='dipl'&&h.tab!=='read'?` · ${t(UI.hitInTab)} ${h.tab.toUpperCase()}`:''}</div>
+      <div style="font-size:13.5px;margin-top:4px">${t(h.s.title)}</div>
+      <p style="font-size:14px;color:var(--ink-soft);margin:6px 0 0">${markify(esc(h.snippet),q)}</p></div>`).join('')}
+    ${hits.length>HMAX?`<p class="empty">… ${hits.length-HMAX} weitere</p>`:''}</div>`:''}
+  ${pHits.length?`<div class="result-block"><h3>${t(UI.inPersons)}</h3><div class="grid cols3">${pHits.slice(0,9).map(cardPerson).join('')}</div></div>`:''}
+  ${sMeta.length?`<div class="result-block"><h3>${t(UI.inSources)}</h3><div class="grid cols3">${sMeta.map(cardSource).join('')}</div></div>`:''}
   ${eHits.length?`<div class="result-block"><h3>${t(UI.inEvents)}</h3><ul class="timeline">${eHits.map(e=>`<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p></li>`).join('')}</ul></div>`:''}`;
 }
-function doSearch(){const q=document.getElementById('searchInput').value.trim();if(q)go('search',q);}
+function doSearch(){const q=document.getElementById('searchInput').value.trim();if(q){HLQ='';go('search',q);}}
+let HLQ='';
+const DIA={'ä':'a','ö':'o','ü':'u','ß':'ss','ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z','é':'e','è':'e','à':'a','ç':'c'};
+function norm(s){return (s||'').toLowerCase().replace(/[äöüßąćęłńóśźżéèàç]/g,c=>DIA[c]||c).replace(/(?<!q)ue/g,'u').replace(/ae/g,'a').replace(/oe/g,'o');}
+function terms(q){return norm(q).split(/\s+/).filter(x=>x.length>1);}
+function wordMatch(w,x){if(w===x)return true;if(w.startsWith(x)&&w.length-x.length<=3)return true;if(x.length>=6&&w.includes(x))return true;return false;}
+function matchAll(hayN,ts){const ws=hayN.split(/[^a-z0-9]+/);return ts.every(x=>ws.some(w=>wordMatch(w,x)));}
+function goHit(sid,pi,q){HLQ=q;go('source',sid,'dipl:'+pi);}
+function markify(html,q){
+  if(!q)return html;
+  const ts=terms(q);if(!ts.length)return html;
+  return html.split(/(<[^>]+>)/g).map(seg=>{
+    if(seg.startsWith('<')||!seg)return seg;
+    // Wortgrenzen im Original finden, Wörter normalisiert prüfen
+    return seg.replace(/[A-Za-zÄÖÜäöüßĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9\-]+/g,w=>{
+      const parts=w.split('-');
+      const hit=parts.some(p=>{const pn=norm(p);return ts.some(x=>wordMatch(pn,x));});
+      return hit?'<mark>'+w+'</mark>':w;
+    });
+  }).join('');
+}
+function snippetOf(text,q,len){
+  const ts=terms(q);const tn=norm(text);
+  let idx=-1;for(const x of ts){const i=tn.indexOf(x);if(i>=0&&(idx<0||i<idx))idx=i;}
+  if(idx<0)idx=0;
+  const a=Math.max(0,idx-70),b=Math.min(text.length,idx+(len||110));
+  return (a>0?'… ':'')+text.slice(a,b)+(b<text.length?' …':'');
+}
 
 /* ---------- Admin-Modus: Bearbeiten, Export, Import ---------- */
 let ADMIN_PW='Annchen1923';
@@ -988,6 +1046,16 @@ function render(){
   document.getElementById('brandTitle').textContent=t(UI.brandTitle);
   document.getElementById('brandSub').textContent=t(UI.brandSub);
   document.getElementById('searchInput').placeholder=t(UI.searchPh);
+  const dl=document.getElementById('searchSugg');
+  if(dl&&!dl.dataset.lang||dl.dataset.lang!==LANG){
+    dl.dataset.lang=LANG;
+    const sugg=[...new Set([].concat(
+      PERSONS.filter(p=>p.status==='ident'||p.circle).map(p=>p.name.split(' [')[0]),
+      Object.keys(TAGS).map(k=>t(TAGS[k])),
+      SOURCES.map(s=>t(s.title)),
+      Object.keys(STRANDS).map(k=>t(STRANDS[k]))))];
+    dl.innerHTML=sugg.map(x=>`<option value="${esc(x)}">`).join('');
+  }
   document.getElementById('footer').textContent=t(UI.footer);
   document.getElementById('adminBar').innerHTML=ADMIN?`<div style="background:var(--accent);color:#f6ecdd;font-family:var(--sans);font-size:12.5px;padding:7px 26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:60">
     <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: ${EDITCOUNT}</span>
