@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WESSLING FAMILY ARCHIVE — geschützt</title><style>
+ body{background:#2e2418;color:#e8dcc4;font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+ .gate{text-align:center;max-width:420px;padding:30px}
+ h1{font-size:19px;letter-spacing:.18em;font-weight:normal}
+ p{font-size:13.5px;color:#b3a488;font-family:'Segoe UI',sans-serif}
+ input{font-size:16px;padding:10px 14px;border-radius:6px;border:1px solid #6d5b3f;background:#f6f1e7;color:#2e2418;width:100%;box-sizing:border-box;text-align:center;margin:14px 0 10px}
+ button{font-family:'Segoe UI',sans-serif;font-size:14px;background:#7d2e2a;color:#f6ecdd;border:none;border-radius:18px;padding:10px 26px;cursor:pointer;font-weight:600}
+ .err{color:#d98b84;font-size:13px;min-height:18px;font-family:'Segoe UI',sans-serif}
+ .lock{font-size:34px}
+</style></head><body>
+<div class="gate"><div class="lock">&#128272;</div>
+ <h1>WESSLING FAMILY ARCHIVE</h1>
+ <p>Privates Familienarchiv — Zugang nur mit Passwort.<br>Private family archive — password required.<br>Prywatne archiwum rodzinne — wymagane has&#322;o.</p>
+ <input id="pw" type="password" placeholder="Passwort / password / hasło" onkeydown="if(event.key===&#39;Enter&#39;)unlock()" autofocus="">
+ <div class="err" id="err"></div>
+ <button onclick="unlock()">&Ouml;ffnen &middot; Open &middot; Otw&oacute;rz</button>
+</div>
+<script>
+const B64="__B64__";
+async function unlock(){
+  const err=document.getElementById('err');err.textContent='…';
+  try{
+    const raw=Uint8Array.from(atob(B64),c=>c.charCodeAt(0));
+    const salt=raw.slice(0,16),nonce=raw.slice(16,28),ct=raw.slice(28);
+    const pw=document.getElementById('pw').value;
+    const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:nonce},key,ct);
+    const html=new TextDecoder().decode(pt);
+    const f=document.createElement('iframe');
+    f.setAttribute('style','position:fixed;inset:0;width:100vw;height:100vh;border:0;background:#f6f1e7');
+    f.setAttribute('title','Archiv');
+    document.body.innerHTML='';document.body.style.margin='0';document.body.style.background='#f6f1e7';
+    document.body.appendChild(f);
+    f.srcdoc=html;
+  }catch(e){err.textContent='Falsches Passwort / wrong password / błędne hasło';}
+}
+</script></body></html>

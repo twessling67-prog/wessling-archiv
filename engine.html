@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wessling-Archiv — Prototyp</title>
+<style>
+  :root{
+    --paper:#f6f1e7; --paper-deep:#efe7d7; --card:#fdfaf3;
+    --ink:#2e2418; --ink-soft:#5c4f3d; --ink-faint:#8a7c66;
+    --accent:#7d2e2a; --accent-soft:#a2554f; --gold:#9a7b2f;
+    --line:#d9cdb8; --ok:#3f6b45; --warn:#8a6d1f;
+    --shadow:0 1px 3px rgba(46,36,24,.10), 0 6px 18px rgba(46,36,24,.07);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--serif);line-height:1.6}
+  a{color:var(--accent);cursor:pointer;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .demo-banner{background:#3a2f1f;color:#e8dcc4;font-family:var(--sans);font-size:12.5px;
+    text-align:center;padding:6px 12px;letter-spacing:.02em}
+  header.site{background:var(--card);border-bottom:3px double var(--line);padding:18px 28px 0;
+    position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(46,36,24,.06)}
+  .masthead{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .brand{display:flex;align-items:baseline;gap:14px;cursor:pointer}
+  .brand h1{font-size:20px;font-weight:normal;letter-spacing:.16em}
+  .brand h1 .amp{color:var(--accent);font-style:italic}
+  .brand .sub{font-family:var(--sans);font-size:11.5px;color:var(--ink-faint);
+    text-transform:uppercase;letter-spacing:.18em}
+  .head-tools{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .search-wrap{position:relative}
+  .search-wrap input{font-family:var(--sans);font-size:13.5px;padding:7px 12px 7px 32px;
+    border:1px solid var(--line);border-radius:18px;background:var(--paper);color:var(--ink);
+    width:250px;outline:none}
+  .search-wrap input:focus{border-color:var(--accent-soft)}
+  .search-wrap .icon{position:absolute;left:11px;top:7px;color:var(--ink-faint);font-size:13px}
+  .lang-switch{display:flex;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    font-family:var(--sans);font-size:12.5px}
+  .lang-switch button{border:none;background:var(--paper);color:var(--ink-soft);padding:6px 13px;
+    cursor:pointer;font-weight:600;letter-spacing:.04em}
+  .lang-switch button.active{background:var(--accent);color:#f6ecdd}
+  nav.main{display:flex;gap:4px;margin-top:12px;flex-wrap:wrap}
+  nav.main button{font-family:var(--sans);font-size:13.5px;border:none;background:none;
+    color:var(--ink-soft);padding:9px 15px;cursor:pointer;border-bottom:3px solid transparent}
+  nav.main button:hover{color:var(--accent)}
+  nav.main button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  main{max-width:1100px;margin:0 auto;padding:30px 24px 80px}
+  h2.page{font-size:30px;font-weight:normal;margin-bottom:6px}
+  .page-sub{font-family:var(--sans);color:var(--ink-faint);font-size:13.5px;margin-bottom:26px}
+  .rule{border:none;border-top:1px solid var(--line);margin:22px 0}
+  .grid{display:grid;gap:18px}
+  .grid.cols3{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  .grid.cols2{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:18px 20px;box-shadow:var(--shadow)}
+  .card h3{font-size:18px;font-weight:normal;margin-bottom:4px}
+  .card h3 a{color:var(--ink)} .card h3 a:hover{color:var(--accent)}
+  .meta{font-family:var(--sans);font-size:12px;color:var(--ink-faint);margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-family:var(--sans);font-size:11.5px;background:var(--paper-deep);
+    border:1px solid var(--line);border-radius:12px;padding:2px 10px;color:var(--ink-soft);cursor:pointer}
+  .chip:hover{border-color:var(--accent-soft);color:var(--accent)}
+  .chip.strand{background:#ece2f0;border-color:#cbb8d6;color:#5b3a6e}
+  .badge{font-family:var(--sans);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;
+    border-radius:3px;padding:2px 7px;font-weight:700}
+  .badge.ok{background:#e2ecdf;color:var(--ok)}
+  .badge.rough{background:#f2e8cf;color:var(--warn)}
+  .badge.open{background:#f0dede;color:var(--accent)}
+  .badge.type{background:var(--paper-deep);color:var(--ink-soft)}
+  .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:26px;margin-bottom:30px}
+  @media(max-width:800px){.hero{grid-template-columns:1fr}}
+  .hero .welcome{background:var(--card);border:1px solid var(--line);border-radius:6px;
+    padding:26px 28px;box-shadow:var(--shadow)}
+  .hero .welcome p{margin-top:10px;color:var(--ink-soft)}
+  .strand-list{display:flex;flex-direction:column;gap:10px}
+  .strand-row{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--accent);
+    border-radius:4px;padding:10px 16px;cursor:pointer;font-family:var(--sans);font-size:14px}
+  .strand-row:hover{background:var(--paper-deep)}
+  .strand-row b{font-size:15px}
+  .strand-row span{color:var(--ink-faint);font-size:12px;display:block}
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;font-family:var(--sans)}
+  .filterbar button{font-size:12.5px;border:1px solid var(--line);background:var(--card);
+    border-radius:15px;padding:5px 14px;cursor:pointer;color:var(--ink-soft)}
+  .filterbar button.active{background:var(--accent);color:#f6ecdd;border-color:var(--accent)}
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+  .backlink{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);display:inline-block;margin-bottom:14px}
+  .person-layout{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:18px}
+  @media(max-width:800px){.person-layout{grid-template-columns:1fr}}
+  .factbox{background:var(--paper-deep);border:1px solid var(--line);border-radius:6px;padding:16px 18px;
+    font-family:var(--sans);font-size:13px}
+  .factbox dt{color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-top:10px}
+  .factbox dd{margin:1px 0 0}
+  .portrait{width:100%;aspect-ratio:4/5;background:linear-gradient(150deg,#e6dcc6,#d5c6a8);
+    border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;justify-content:center;
+    color:#8a7b5e;font-family:var(--sans);font-size:12px;margin-bottom:12px;text-align:center;padding:10px}
+  .prose p{margin-bottom:12px}
+  .prose .cite{font-family:var(--sans);font-size:11px;color:var(--gold);vertical-align:super;cursor:pointer}
+  .mention-list li{margin-bottom:10px}
+  .mention-list{list-style:none}
+  .snippet{color:var(--ink-soft);font-style:italic;font-size:14.5px}
+  .source-layout{display:grid;grid-template-columns:1fr 1.25fr;gap:24px;margin-top:20px}
+  @media(max-width:860px){.source-layout{grid-template-columns:1fr}}
+  .scanbox{background:#efe6d2;border:1px solid var(--line);border-radius:4px;padding:14px;
+    box-shadow:var(--shadow)}
+  .scanbox svg{width:100%;height:auto;display:block;border:1px solid #d8cbae;background:#f4ecd9}
+  .scan-caption{font-family:var(--sans);font-size:11.5px;color:var(--ink-faint);margin-top:8px;text-align:center}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;font-family:var(--sans);flex-wrap:wrap}
+  .tabs button{font-size:12.5px;border:1px solid var(--line);border-bottom:none;background:var(--paper-deep);
+    padding:6px 14px;cursor:pointer;border-radius:5px 5px 0 0;color:var(--ink-soft)}
+  .tabs button.active{background:var(--card);font-weight:700;color:var(--accent)}
+  .transcript{white-space:pre-wrap;font-size:15.5px;line-height:1.75}
+  .transcript .unc{background:#f4e6c8;border-radius:2px;padding:0 2px;cursor:help}
+  .transcript .mention{color:var(--accent);border-bottom:1px dotted var(--accent-soft);cursor:pointer}
+  .note{font-family:var(--sans);font-size:12px;color:var(--ink-faint);background:var(--paper-deep);
+    border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 4px 4px 0;margin-top:14px}
+  .timeline{list-style:none;border-left:2px solid var(--line);margin-left:8px;padding-left:26px}
+  .timeline li{position:relative;margin-bottom:26px}
+  .timeline li::before{content:'';position:absolute;left:-33px;top:6px;width:12px;height:12px;
+    border-radius:50%;background:var(--accent);border:2px solid var(--paper)}
+  .timeline .tl-date{font-family:var(--sans);font-size:12px;color:var(--gold);font-weight:700;
+    text-transform:uppercase;letter-spacing:.08em}
+  .timeline h4{font-weight:normal;font-size:17px}
+  .timeline p{color:var(--ink-soft);font-size:14.5px}
+  .tree-wrap{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px;
+    box-shadow:var(--shadow);overflow-x:auto}
+  .tree-wrap svg{min-width:700px;width:100%;height:auto}
+  .tree-node rect{fill:var(--paper-deep);stroke:var(--line);rx:5}
+  .tree-node.main rect{fill:#efe0de;stroke:var(--accent-soft)}
+  .tree-node text{font-family:var(--sans);fill:var(--ink)}
+  .tree-node{cursor:pointer}
+  .tree-node:hover rect{stroke:var(--accent);stroke-width:2}
+  .tree-line{stroke:var(--ink-faint);stroke-width:1.3;fill:none}
+  .tree3{display:grid;gap:14px}
+  .tree-mid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}
+  @media(max-width:860px){.tree-mid{grid-template-columns:1fr}}
+  .tgroup{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.35)}
+  .tlabel{font-family:var(--sans);font-size:11px;color:var(--ink-faint);text-transform:uppercase;
+    letter-spacing:.1em;margin-bottom:8px;text-align:center}
+  .crumbs{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint)}
+  .crumbs a{color:var(--accent-soft)}
+  .elab{display:block;font-family:var(--sans);font-size:11px;color:var(--ink-faint);margin:10px 0 3px;
+    text-transform:uppercase;letter-spacing:.06em}
+  .ein{width:100%;font-family:var(--serif);font-size:14px;border:1px solid var(--line);border-radius:5px;
+    padding:7px 9px;background:var(--paper);box-sizing:border-box}
+  .result-block h3{font-size:15px;font-family:var(--sans);color:var(--ink-faint);
+    text-transform:uppercase;letter-spacing:.1em;margin:22px 0 10px}
+  mark{background:#f0dfae;padding:0 1px}
+  .modal-back{position:fixed;inset:0;background:rgba(30,22,12,.45);display:flex;
+    align-items:center;justify-content:center;z-index:100;padding:20px}
+  .modal{background:var(--card);border-radius:8px;max-width:520px;padding:26px 28px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .modal h3{font-size:20px;font-weight:normal;margin-bottom:10px}
+  .modal p{font-size:14.5px;color:var(--ink-soft);margin-bottom:10px}
+  .modal textarea{width:100%;font-family:var(--serif);font-size:14px;border:1px solid var(--line);
+    border-radius:5px;padding:10px;background:var(--paper);min-height:80px;margin:8px 0}
+  .btn{font-family:var(--sans);font-size:13px;border:none;border-radius:16px;padding:8px 18px;
+    cursor:pointer;background:var(--accent);color:#f6ecdd;font-weight:600}
+  .btn.ghost{background:none;border:1px solid var(--line);color:var(--ink-soft)}
+  .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+  .propose{font-family:var(--sans);font-size:12px;color:var(--ink-faint);border:1px dashed var(--line);
+    background:none;border-radius:14px;padding:4px 12px;cursor:pointer}
+  .propose:hover{color:var(--accent);border-color:var(--accent-soft)}
+  .empty{color:var(--ink-faint);font-style:italic}
+  footer{border-top:3px double var(--line);text-align:center;padding:26px;font-family:var(--sans);
+    font-size:12px;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<div class="demo-banner" id="demoBanner"></div>
+<header class="site">
+  <div class="masthead">
+    <div class="brand" onclick="go('home')">
+      <h1 id="brandTitle">WESSLING FAMILIENARCHIV</h1>
+      <span class="sub" id="brandSub"></span>
+    </div>
+    <div class="head-tools">
+      <div class="search-wrap">
+        <span class="icon">&#128269;</span>
+        <input id="searchInput" type="text" onkeydown="if(event.key==='Enter')doSearch()">
+      </div>
+      <div class="lang-switch" id="langSwitch"></div>
+      <button class="propose" title="Admin" onclick="adminToggle()">⚙</button>
+    </div>
+  </div>
+  <nav class="main" id="mainNav"></nav>
+</header>
+<div id="adminBar"></div>
+<main id="app"></main>
+<footer id="footer"></footer>
+<div id="modalHost"></div>
+<script>
+/* ============================================================
+   WESSLING FAMILY ARCHIVE — interactive trilingual prototype.
+   All content is FICTIONAL SAMPLE DATA illustrating structure.
+   Data model mirrors the concept document (persons, sources,
+   pages, events, tags, strands — each with de/en/pl fields).
+   ============================================================ */
+let LANG='de', VIEW={name:'home'};
+
+const UI={
+  demoBanner:{de:'Familienarchiv im Aufbau — Transkriptionen KI-erstellt, Prüfung durch die Familie läuft. [?] = unsichere Lesung.',
+    en:'Family archive in progress — transcriptions AI-made, family review ongoing. [?] = uncertain reading.',
+    pl:'Archiwum rodzinne w budowie — transkrypcje wykonane przez AI, trwa weryfikacja przez rodzinę. [?] = niepewny odczyt.'},
+  brandSub:{de:'Chronik · Quellen · Personen',en:'Chronicle · Sources · People',pl:'Kronika · Źródła · Osoby'},
+  brandTitle:{de:'WESSLING FAMILIENARCHIV',en:'WESSLING FAMILY ARCHIVE',pl:'ARCHIWUM RODZINY WESSLING'},
+  nav:{home:{de:'Start',en:'Home',pl:'Start'},persons:{de:'Personen',en:'People',pl:'Osoby'},
+    sources:{de:'Quellen',en:'Sources',pl:'Źródła'},timeline:{de:'Zeitleiste',en:'Timeline',pl:'Oś czasu'},
+    tree:{de:'Stammbaum',en:'Family tree',pl:'Drzewo genealogiczne'},strands:{de:'Erzählstränge',en:'Narratives',pl:'Opowieści'},
+    fragen:{de:'Fragen',en:'Ask',pl:'Pytania'},
+    mappe:{de:'Sammelmappe',en:'Collection',pl:'Teczka'}},
+  treeBack:{de:'Zurück',en:'Back',pl:'Wstecz'},
+  mappeAdd:{de:'In die Sammelmappe',en:'Add to collection',pl:'Dodaj do teczki'},
+  mappeEmpty:{de:'Die Sammelmappe ist leer. Auf Quellenseiten und Personenartikeln auf „In die Sammelmappe" klicken, um Dokumente und Artikel für den PDF-Export zusammenzustellen.',
+    en:'The collection is empty. Click “Add to collection” on source pages and person articles to compile documents for PDF export.',
+    pl:'Teczka jest pusta. Kliknij „Dodaj do teczki" na stronach źródeł i artykułach osób, aby zestawić dokumenty do eksportu PDF.'},
+  mappePdf:{de:'PDF erstellen',en:'Create PDF',pl:'Utwórz PDF'},
+  mappeHint:{de:'Es öffnet sich die Druckansicht — dort im Dialog „Als PDF speichern" wählen.',
+    en:'A print view opens — choose “Save as PDF” in the dialog.',
+    pl:'Otworzy się widok wydruku — w oknie wybierz „Zapisz jako PDF".'},
+  mappeRemove:{de:'Entfernen',en:'Remove',pl:'Usuń'},
+  mappeSub:{de:'Individuell zusammengestellte Dokumente und Artikel — Reihenfolge per Pfeil ändern, dann als PDF speichern.',
+    en:'Individually compiled documents and articles — reorder with the arrows, then save as PDF.',
+    pl:'Indywidualnie zestawione dokumenty i artykuły — zmień kolejność strzałkami, potem zapisz jako PDF.'},
+  adminActive:{de:'Admin-Modus aktiv',en:'Admin mode active',pl:'Tryb administratora aktywny'},
+  adminPrompt:{de:'Admin-Passwort:',en:'Admin password:',pl:'Hasło administratora:'},
+  adminWrong:{de:'Falsches Passwort.',en:'Wrong password.',pl:'Błędne hasło.'},
+  adminEdit:{de:'Bearbeiten',en:'Edit',pl:'Edytuj'},
+  adminSave:{de:'Speichern',en:'Save',pl:'Zapisz'},
+  adminEdits:{de:'Änderungen',en:'Edits',pl:'Zmiany'},
+  adminExport:{de:'Daten exportieren',en:'Export data',pl:'Eksport danych'},
+  adminImport:{de:'Daten importieren',en:'Import data',pl:'Import danych'},
+  adminImported:{de:'Daten importiert.',en:'Data imported.',pl:'Dane zaimportowane.'},
+  adminExpHint:{de:'Exportierte JSON-Datei in den OneDrive-Ordner legen oder an Claude senden — sie wird in die Masterdatei eingespielt.',
+    en:'Place the exported JSON in the OneDrive folder or send it to Claude — it will be merged into the master file.',
+    pl:'Umieść wyeksportowany plik JSON w folderze OneDrive lub wyślij do Claude — zostanie scalony z plikiem głównym.'},
+  eName:{de:'Name',en:'Name',pl:'Imię i nazwisko'},
+  eForms:{de:'Namensformen / Notiz',en:'Name forms / note',pl:'Formy nazwiska / notatka'},
+  einTitle:{de:'Eingang — neue Quelle einreichen',en:'Intake — submit a new source',pl:'Wpływy — zgłoś nowe źródło'},
+  einText:{de:'So kommt eine neue Quelle ins Archiv: 1) Scans (PDF/JPG, möglichst 300 dpi) in den OneDrive-Ordner „Family Archive/Content" legen. 2) Unten die Meldekarte ausfüllen und herunterladen — mit in den Ordner legen. 3) Claude transkribiert, übersetzt und verschlagwortet die Quelle in der nächsten Arbeitssitzung; danach erscheint sie hier im Archiv.',
+    en:'How a new source enters the archive: 1) Place scans (PDF/JPG, ideally 300 dpi) in the OneDrive folder “Family Archive/Content”. 2) Fill in and download the intake card below — add it to the folder. 3) Claude transcribes, translates and indexes the source in the next working session; it then appears here in the archive.',
+    pl:'Jak nowe źródło trafia do archiwum: 1) Umieść skany (PDF/JPG, najlepiej 300 dpi) w folderze OneDrive „Family Archive/Content". 2) Wypełnij i pobierz poniższą kartę zgłoszenia — dołącz ją do folderu. 3) Claude dokona transkrypcji, tłumaczenia i indeksacji w najbliższej sesji roboczej; źródło pojawi się w archiwum.'},
+  einForm:{de:'Meldekarte ausfüllen …',en:'Fill in the intake card …',pl:'Wypełnij kartę zgłoszenia …'},
+  einT1:{de:'Titel / Kurzbeschreibung',en:'Title / short description',pl:'Tytuł / krótki opis'},
+  einT2:{de:'Typ (Brief, Tagebuch, Foto …)',en:'Type (letter, diary, photo …)',pl:'Typ (list, dziennik, zdjęcie …)'},
+  einT3:{de:'Zeitraum / Datierung',en:'Period / dating',pl:'Okres / datowanie'},
+  einT4:{de:'Herkunft (von wem, wie überliefert?)',en:'Provenance (from whom, how passed down?)',pl:'Pochodzenie (od kogo, jak przekazane?)'},
+  einT5:{de:'Bemerkungen (erkannte Personen, Besonderheiten)',en:'Notes (recognised people, particulars)',pl:'Uwagi (rozpoznane osoby, szczegóły)'},
+  einBtn:{de:'Meldekarte herunterladen',en:'Download intake card',pl:'Pobierz kartę zgłoszenia'},
+  einWayA:{de:'Weg A — Archivleitung (Thomas)',en:'Route A — archive editor (Thomas)',pl:'Droga A — redaktor archiwum (Thomas)'},
+  einWayB:{de:'Weg B — Familienmitglieder',en:'Route B — family members',pl:'Droga B — członkowie rodziny'},
+  einFamText:{de:'1) Dokumente scannen oder bei gutem Tageslicht flach abfotografieren — jede Seite einzeln, möglichst scharf (ideal 300 dpi). 2) Unten die Meldekarte ausfüllen und herunterladen. 3) Scans und Meldekarte über den Upload-Link hochladen oder per E-Mail an die Archivleitung senden. Mehr ist nicht nötig — Transkription, Übersetzung und Einordnung übernimmt die Redaktion, und die Quelle erscheint hier im Archiv.',
+    en:'1) Scan the documents or photograph them flat in good daylight — each page separately, as sharp as possible (ideally 300 dpi). 2) Fill in and download the intake card below. 3) Upload scans and card via the upload link, or send them by e-mail to the archive editor. Nothing more is needed — transcription, translation and indexing are done by the editorial side, and the source then appears here in the archive.',
+    pl:'1) Zeskanuj dokumenty lub sfotografuj je na płasko w dobrym świetle — każdą stronę osobno, jak najostrzej (najlepiej 300 dpi). 2) Wypełnij i pobierz poniższą kartę zgłoszenia. 3) Prześlij skany i kartę przez link do przesyłania lub e-mailem do redaktora archiwum. Nic więcej nie trzeba — transkrypcją, tłumaczeniem i indeksowaniem zajmie się redakcja, a źródło pojawi się w archiwum.'},
+  einUpload:{de:'Zum Upload-Link',en:'Open upload link',pl:'Link do przesyłania'},
+  einMail:{de:'Per E-Mail senden',en:'Send by e-mail',pl:'Wyślij e-mailem'},
+  searchPh:{de:'Archiv durchsuchen …',en:'Search the archive …',pl:'Przeszukaj archiwum …'},
+  welcome:{de:'Willkommen im Familienarchiv',en:'Welcome to the family archive',pl:'Witamy w archiwum rodzinnym'},
+  welcomeText:{de:'Briefe, Tagebücher, Alben und Dokumente der Familien Wessling, Adams, Peters, Ballin, Ganz und Mayer — transkribiert, übersetzt, verschlagwortet und miteinander verknüpft. Jede erwähnte Person ist nachschlagbar, jede Aussage belegt.',
+    en:'Letters, diaries, albums and documents of the Wessling, Adams, Peters, Ballin, Ganz and Mayer families — transcribed, translated, indexed and interlinked. Every person mentioned can be looked up; every statement cites its source.',
+    pl:'Listy, pamiętniki, albumy i dokumenty rodzin Wessling, Adams, Peters, Ballin, Ganz i Mayer — przepisane, przetłumaczone, zindeksowane i wzajemnie powiązane. Każdą wspomnianą osobę można wyszukać, a każde stwierdzenie ma odnośnik do źródła.'},
+  strandsTitle:{de:'Familienstränge',en:'Family lines',pl:'Linie rodzinne'},
+  recent:{de:'Zuletzt erfasst',en:'Recently added',pl:'Ostatnio dodane'},
+  personsSub:{de:'Alle im Archiv erfassten und erwähnten Personen',en:'Everyone recorded or mentioned in the archive',pl:'Wszystkie osoby ujęte lub wspomniane w archiwum'},
+  sourcesSub:{de:'Der Quellenfundus: Originale, Transkripte, Übersetzungen',en:'The source collection: originals, transcripts, translations',pl:'Zbiór źródeł: oryginały, transkrypcje, tłumaczenia'},
+  timelineSub:{de:'Belegte Ereignisse aus allen Quellen',en:'Documented events from all sources',pl:'Udokumentowane wydarzenia ze wszystkich źródeł'},
+  treeSub:{de:'Familien-Browser aus dem Stammbaum [Q-GED-01] — 311 Personen, 130 Familien. Karte anklicken, um die Person ins Zentrum zu holen.',en:'Family browser built from the tree [Q-GED-01] — 311 people, 130 families. Click a card to bring that person into focus.',pl:'Przeglądarka rodzin z drzewa [Q-GED-01] — 311 osób, 130 rodzin. Kliknij kartę, aby ustawić osobę w centrum.'},
+  strandsSub:{de:'Kuratierte Geschichten quer durch die Quellen',en:'Curated stories across the sources',pl:'Wybrane opowieści łączące źródła'},
+  all:{de:'Alle',en:'All',pl:'Wszystkie'},
+  born:{de:'geb.',en:'b.',pl:'ur.'},died:{de:'gest.',en:'d.',pl:'zm.'},
+  factsTitle:{de:'Im Überblick',en:'At a glance',pl:'W skrócie'},
+  fNames:{de:'Namensformen',en:'Name forms',pl:'Formy imienia'},
+  fDates:{de:'Lebensdaten',en:'Dates',pl:'Daty życia'},
+  fStrand:{de:'Familienstrang',en:'Family line',pl:'Linia rodzinna'},
+  fRel:{de:'Beziehungen',en:'Relations',pl:'Relacje'},
+  fStatus:{de:'Status',en:'Status',pl:'Status'},
+  stIdent:{de:'identifiziert',en:'identified',pl:'zidentyfikowana'},
+  stOpen:{de:'nicht identifiziert',en:'not yet identified',pl:'niezidentyfikowana'},
+  stLiving:{de:'lebend? · Datenschutz',en:'living? · privacy',pl:'żyje? · ochrona danych'},
+  fam:{parents:{de:'Eltern',en:'Parents',pl:'Rodzice'},spouses:{de:'Partner / Ehen',en:'Partners / marriages',pl:'Partnerzy / małżeństwa'},children:{de:'Kinder',en:'Children',pl:'Dzieci'},siblings:{de:'Geschwister',en:'Siblings',pl:'Rodzeństwo'}},
+  famBox:{de:'Familie — aus dem Stammbaum',en:'Family — from the tree',pl:'Rodzina — z drzewa'},
+  gedAutoBio:{de:'Dieser Eintrag stammt aus dem Familienstammbaum [Q-GED-01]. Ein ausführlicher Artikel entsteht, sobald Quellen zu dieser Person erfasst und ausgewertet sind.',en:'This entry comes from the family tree [Q-GED-01]. A full article will grow once sources concerning this person have been processed.',pl:'Ten wpis pochodzi z drzewa genealogicznego [Q-GED-01]. Pełny artykuł powstanie, gdy zostaną opracowane źródła dotyczące tej osoby.'},
+  openArticle:{de:'Zum Artikel',en:'Open article',pl:'Do artykułu'},
+  qaTitle:{de:'Fragen an das Archiv',en:'Ask the archive',pl:'Zapytaj archiwum'},
+  qaSub:{de:'Offline-Assistent: beantwortet Faktenfragen direkt aus den erfassten Daten — Personen, Lebensdaten, Ereignisse, Quellen — mit Belegen. Er versteht keine freie Sprache wie eine KI; der echte KI-Chat kommt mit der Online-Version.',
+    en:'Offline assistant: answers factual questions straight from the recorded data — people, dates, events, sources — with references. It does not understand free language like an AI; the real AI chat arrives with the online version.',
+    pl:'Asystent offline: odpowiada na pytania faktograficzne wprost z zebranych danych — osoby, daty, wydarzenia, źródła — z odnośnikami. Nie rozumie swobodnego języka jak AI; prawdziwy czat AI pojawi się w wersji online.'},
+  qaPh:{de:'Frage eingeben — z. B. Name, Jahr oder Thema …',en:'Type a question — e.g. a name, year or topic …',pl:'Wpisz pytanie — np. imię, rok lub temat …'},
+  qaAsk:{de:'Fragen',en:'Ask',pl:'Zapytaj'},
+  qaFallback:{de:'Keine direkte Antwort gefunden — hier sind Treffer aus der Volltextsuche:',en:'No direct answer found — here are full-text search hits:',pl:'Brak bezpośredniej odpowiedzi — oto wyniki wyszukiwania pełnotekstowego:'},
+  qaNothing:{de:'Leider nichts gefunden. Versuche Namen (z. B. „Irene"), Jahreszahlen (z. B. „1943") oder Schlagworte (z. B. „Poesiealbum").',
+    en:'Nothing found. Try names (e.g. “Irene”), years (e.g. “1943”) or tags (e.g. “friendship album”).',
+    pl:'Nic nie znaleziono. Spróbuj imion (np. „Irene"), lat (np. „1943") lub haseł (np. „sztambuch").'},
+  qaEvents:{de:'Ereignisse',en:'Events',pl:'Wydarzenia'},
+  qaSources:{de:'Passende Quellen',en:'Matching sources',pl:'Pasujące źródła'},
+  qaMentions:{de:'Erwähnt in',en:'Mentioned in',pl:'Wzmianki w'},
+  qaAI:{de:'KI-Antwort holen (online)',en:'Get AI answer (online)',pl:'Pobierz odpowiedź AI (online)'},
+  qaAIWait:{de:'KI denkt nach …',en:'AI is thinking …',pl:'AI myśli …'},
+  qaAIErr:{de:'KI-Dienst nicht erreichbar.',en:'AI service unreachable.',pl:'Usługa AI niedostępna.'},
+  photos:{de:'Fotos',en:'Photos',pl:'Zdjęcia'},
+  circleFriends:{de:'Freundeskreis',en:'Circle of friends',pl:'Krąg przyjaciół'},
+  treeCenter:{de:'Im Zentrum',en:'In focus',pl:'W centrum'},
+  portraitPh:{de:'Porträt folgt (Scan aus Album)',en:'Portrait to follow (album scan)',pl:'Portret wkrótce (skan z albumu)'},
+  mentions:{de:'Erwähnungen in den Quellen',en:'Mentions in the sources',pl:'Wzmianki w źródłach'},
+  article:{de:'Artikel',en:'Article',pl:'Artykuł'},
+  propose:{de:'Korrektur vorschlagen',en:'Suggest a correction',pl:'Zaproponuj poprawkę'},
+  proposeTitle:{de:'Korrektur oder Anmerkung',en:'Correction or note',pl:'Poprawka lub uwaga'},
+  proposeText:{de:'So arbeitet die Familie zusammen: Jeder kann an jeder Stelle eine Anmerkung hinterlassen — „Ich lese hier Königsberg, nicht Küstrin" oder „Das ist Tante Grete, ich erkenne sie!". Ein Prüfer bestätigt, der Herausgeber gibt frei. Jede Änderung bleibt nachvollziehbar.',
+    en:'This is how the family collaborates: anyone can leave a note anywhere — "I read Königsberg here, not Küstrin" or "That is Aunt Grete, I recognise her!". A reviewer confirms it, the editor publishes it. Every change stays traceable.',
+    pl:'Tak współpracuje rodzina: każdy może zostawić uwagę w dowolnym miejscu — „Czytam tu Königsberg, nie Küstrin" albo „To ciocia Grete, poznaję ją!". Recenzent potwierdza, redaktor zatwierdza. Każda zmiana pozostaje możliwa do prześledzenia.'},
+  proposePh:{de:'Deine Anmerkung … (im Prototyp ohne Funktion)',en:'Your note … (not functional in the prototype)',pl:'Twoja uwaga … (w prototypie nieaktywna)'},
+  send:{de:'Absenden',en:'Submit',pl:'Wyślij'},close:{de:'Schließen',en:'Close',pl:'Zamknij'},
+  thanks:{de:'Danke! In der echten Plattform landet dies im Prüf-Postfach.',en:'Thank you! In the real platform this goes to the review inbox.',pl:'Dziękujemy! W docelowej platformie trafi to do skrzynki recenzji.'},
+  tabDipl:{de:'Diplomatisch',en:'Diplomatic',pl:'Dyplomatyczna'},
+  tabRead:{de:'Lesefassung',en:'Reading version',pl:'Wersja czytelna'},
+  tabEN:{de:'Englisch',en:'English',pl:'Angielski'},tabPL:{de:'Polnisch',en:'Polish',pl:'Polski'},
+  scanPh:{de:'Faksimile-Platzhalter — hier erscheint der Original-Scan',en:'Facsimile placeholder — the original scan appears here',pl:'Miejsce na faksymile — tu pojawi się skan oryginału'},
+  page:{de:'Seite',en:'Page',pl:'Strona'},
+  uncNote:{de:'Gelb markiert = unsichere Lesung. Rot = erwähnte Person (anklickbar).',
+    en:'Yellow = uncertain reading. Red = person mentioned (clickable).',
+    pl:'Żółty = niepewny odczyt. Czerwony = wspomniana osoba (klikalna).'},
+  srcMeta:{sig:{de:'Signatur',en:'Shelfmark',pl:'Sygnatura'},author:{de:'Verfasser',en:'Author',pl:'Autor'},
+    addressee:{de:'Empfänger',en:'Addressee',pl:'Adresat'},date:{de:'Datierung',en:'Date',pl:'Datowanie'},
+    prov:{de:'Herkunft',en:'Provenance',pl:'Pochodzenie'},status:{de:'Erfassungsstatus',en:'Processing status',pl:'Status opracowania'}},
+  statusMap:{done:{de:'freigegeben',en:'published',pl:'zatwierdzone'},review:{de:'in Prüfung',en:'under review',pl:'w recenzji'},rough:{de:'Rohfassung',en:'draft',pl:'wersja robocza'}},
+  summary:{de:'Zusammenfassung',en:'Summary',pl:'Streszczenie'},
+  results:{de:'Suchergebnisse für',en:'Search results for',pl:'Wyniki wyszukiwania dla'},
+  noResults:{de:'Keine Treffer. Tipp: Namen, Orte oder Schlagworte versuchen.',en:'No matches. Tip: try names, places or tags.',pl:'Brak wyników. Wskazówka: spróbuj imion, miejsc lub haseł.'},
+  inSources:{de:'Quellen & Transkripte',en:'Sources & transcripts',pl:'Źródła i transkrypcje'},
+  inPersons:{de:'Personen',en:'People',pl:'Osoby'},inEvents:{de:'Ereignisse',en:'Events',pl:'Wydarzenia'},
+  taggedWith:{de:'Verschlagwortet mit',en:'Tagged with',pl:'Oznaczone hasłem'},
+  readStrand:{de:'Erzählung lesen',en:'Read the narrative',pl:'Czytaj opowieść'},
+  sourcesCited:{de:'Belegende Quellen',en:'Sources cited',pl:'Źródła'},
+  footer:{de:'Wessling-Familienarchiv · privat, nur für die Familie · Transkriptionen in familiärer Prüfung',
+    en:'Wessling family archive · private, family only · transcriptions under family review',
+    pl:'Archiwum rodziny Wessling · prywatne, tylko dla rodziny · transkrypcje w trakcie weryfikacji'},
+  translMissing:{de:'Übersetzung folgt — Original siehe Lesefassung.',en:'Translation to follow — see the reading version for the original.',pl:'Tłumaczenie wkrótce — oryginał w wersji czytelnej.'}
+};
+
+
+
+
+</script>
+<script>
+/*__DATA__*/
+</script>
+
+<script>
+/* ---------- APP LOGIC ---------- */
+const t=o=>o?(o[LANG]!==undefined?o[LANG]:(o.de!==undefined?o.de:o)):'';
+const P=id=>PERSONS.find(p=>p.id===id);
+const S=id=>SOURCES.find(s=>s.id===id);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const stripHtml=s=>s.replace(/<[^>]*>/g,' ');
+
+function setLang(l){LANG=l;render();}
+function go(name,id,extra){VIEW={name,id,extra};render();window.scrollTo(0,0);}
+
+function renderTranscript(dipl){
+  return esc(dipl)
+    .replace(/&lt;m data-p="([a-z\-]+)"&gt;([\s\S]*?)&lt;\/m&gt;/g,
+      (_,p,txt)=>`<span class="mention" onclick="go('person','${p}')">${txt}</span>`)
+    .replace(/&lt;u title="([^"]*)"&gt;([\s\S]*?)&lt;\/u&gt;/g,
+      (_,ti,txt)=>`<span class="unc" title="${ti}">${txt}</span>`);
+}
+function mentionsOf(pid){
+  const out=[];
+  SOURCES.forEach(s=>s.pages.forEach(pg=>{
+    if(pg.dipl.includes(`data-p="${pid}"`)){
+      const sent=t(pg.read).split(/(?<=[.!?])\s+/).find(x=>true);
+      out.push({src:s,page:pg.n,label:pg.label,snippet:t(pg.read).slice(0,140)+'…'});
+    }
+  }));
+  return out;
+}
+function chipTags(tags){return tags.map(tg=>`<span class="chip" onclick="go('tag','${tg}')">${t(TAGS[tg])}</span>`).join('');}
+function chipStrands(arr){return arr.map(st=>`<span class="chip strand" onclick="go('persons',null,'${st}')">${t(STRANDS[st])}</span>`).join('');}
+function statusBadge(st){const m={done:'ok',review:'rough',rough:'rough'};return `<span class="badge ${m[st]||'rough'}">${t(UI.statusMap[st])}</span>`;}
+
+/* ---------- views ---------- */
+function vHome(){
+  return `<div class="hero">
+    <div class="welcome"><h2 class="page">${t(UI.welcome)}</h2><p>${t(UI.welcomeText)}</p>
+      <div class="chips" style="margin-top:16px">${chipTags(Object.keys(TAGS))}</div></div>
+    <div><h3 style="font-weight:normal;margin-bottom:10px">${t(UI.strandsTitle)}</h3>
+      <div class="strand-list">${Object.keys(STRANDS).map(st=>{
+        const n=PERSONS.filter(p=>p.strand.includes(st)).length;
+        return `<div class="strand-row" onclick="go('persons',null,'${st}')"><b>${t(STRANDS[st])}</b><span>${n} ${t(UI.inPersons)}</span></div>`;}).join('')}
+      </div></div></div>
+    <h3 style="font-weight:normal;margin-bottom:12px">${t(UI.recent)}</h3>
+    <div class="grid cols3">${SOURCES.map(cardSource).join('')}</div>`;
+}
+function cardSource(s){
+  return `<div class="card"><div class="meta"><span class="badge type">${t(s.type)}</span> &nbsp;${s.sig} &nbsp;·&nbsp; ${s.date} &nbsp;${statusBadge(s.status)}</div>
+    <h3><a onclick="go('source','${s.id}')">${t(s.title)}</a></h3>
+    <p style="font-size:14px;color:var(--ink-soft)">${t(s.summary)}</p>
+    <div class="chips">${chipTags(s.tags)}</div></div>`;
+}
+function cardPerson(p){
+  const dates=(p.born!=='?'?`${t(UI.born)} ${p.born}`:'')+(p.died&&p.died!=='?'?` · ${t(UI.died)} ${p.died}`:'');
+  return `<div class="card"><div class="meta">${dates||'—'} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}</div>
+    <h3><a onclick="go('person','${p.id}')">${p.name}</a></h3>
+    <div class="meta">${p.nameForms}</div>
+    <div class="chips">${chipStrands(p.strand)}${p.circle==='freunde'?`<span class="chip strand" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</span>`:''}</div></div>`;
+}
+function vPersons(filter){
+  const list=filter==='freunde'?PERSONS.filter(p=>p.circle==='freunde')
+    :filter?PERSONS.filter(p=>p.strand.includes(filter)):PERSONS;
+  return `<h2 class="page">${t(UI.nav.persons)}</h2><div class="page-sub">${t(UI.personsSub)} (${list.length})</div>
+    <div class="filterbar"><button class="${!filter?'active':''}" onclick="go('persons')">${t(UI.all)}</button>
+    ${Object.keys(STRANDS).map(st=>`<button class="${filter===st?'active':''}" onclick="go('persons',null,'${st}')">${t(STRANDS[st])}</button>`).join('')}
+    <button class="${filter==='freunde'?'active':''}" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</button></div>
+    <div class="grid cols3">${list.map(cardPerson).join('')}</div>`;
+}
+function vPerson(id){
+  const p=P(id); if(!p) return '<p class="empty">?</p>';
+  const men=mentionsOf(id);
+  return `<a class="backlink" onclick="go('persons')">← ${t(UI.nav.persons)}</a>
+  <div class="detail-head"><div><h2 class="page">${p.name}</h2>
+    <div class="page-sub">${p.nameForms} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="propose" onclick="mappeAdd('person','${p.id}')">🗂 ${t(UI.mappeAdd)}</button>
+      ${ADMIN?`<button class="propose" onclick="editPerson('${p.id}')">🛠 ${t(UI.adminEdit)}</button>`:''}
+      <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button></div></div>
+  <div class="person-layout"><div>
+    <h3 style="font-weight:normal;margin-bottom:8px">${t(UI.article)}</h3>
+    <div class="prose">${t(p.bio)||`<p><i>${t(UI.gedAutoBio).replace('[Q-GED-01]','<a class="cite" onclick="go(&quot;source&quot;,&quot;q-ged&quot;)">[Q-GED-01]</a>')}</i></p>`}</div><hr class="rule">
+    <h3 style="font-weight:normal;margin-bottom:10px">${t(UI.mentions)}</h3>
+    ${men.length?`<ul class="mention-list">${men.map(m=>`<li><a onclick="go('source','${m.src.id}')">${t(m.src.title)}</a> — ${m.label||t(UI.page)+' '+m.page}<br><span class="snippet">„${m.snippet}"</span></li>`).join('')}</ul>`:`<p class="empty">—</p>`}
+    ${(window.PHOTOS||[]).some(ph=>ph.persons.includes(p.id))?`<hr class="rule"><h3 style="font-weight:normal;margin-bottom:10px">${t(UI.photos)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">${PHOTOS.filter(ph=>ph.persons.includes(p.id)).map(ph=>`<figure style="margin:0;cursor:pointer" onclick="openPhoto('${ph.k}')"><img src="${IMGS[ph.k]}" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;border:1px solid var(--line)"><figcaption class="meta" style="margin-top:3px">${ph.cap}</figcaption></figure>`).join('')}</div>`:''}
+  </div><aside>
+    ${(p.img&&typeof IMGS!=='undefined'&&IMGS[p.img])?`<img src="${IMGS[p.img]}" style="width:100%;border-radius:4px;border:1px solid var(--line);margin-bottom:12px;cursor:pointer" onclick="openPhoto('${p.img}')">`:`<div class="portrait">${t(UI.portraitPh)}</div>`}
+    <div class="factbox"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.1em">${t(UI.factsTitle)}</b><dl>
+      <dt>${t(UI.fNames)}</dt><dd>${p.nameForms}</dd>
+      <dt>${t(UI.fDates)}</dt><dd>${t(UI.born)} ${p.born} · ${t(UI.died)} ${p.died}</dd>
+      <dt>${t(UI.fStrand)}</dt><dd><div class="chips">${chipStrands(p.strand)}</div></dd>
+      ${p.rel.length?`<dt>${t(UI.fRel)}</dt><dd>${p.rel.map(r=>P(r[0])?`<a onclick="go('person','${r[0]}')">${P(r[0]).name}</a> <span style="color:var(--ink-faint)">${r[1]}</span>`:'').join('<br>')}</dd>`:''}
+    </dl></div>
+    ${famBoxHtml(p.id)}</aside></div>`;
+}
+function famBoxHtml(id){
+  const r=window.RELX&&RELX[id]; if(!r||(!r.par.length&&!r.spo.length&&!r.chi.length&&!r.sib.length)) return '';
+  const li=ids=>ids.map(i=>P(i)?`<a onclick="go('person','${i}')">${P(i).name}</a>`:'').filter(Boolean).join(' · ');
+  const row=(lbl,ids)=>ids.length&&li(ids)?`<dt>${lbl}</dt><dd>${li(ids)}</dd>`:'';
+  return `<div class="factbox" style="margin-top:12px"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.1em">${t(UI.famBox)}</b><dl>
+    ${row(t(UI.fam.parents),r.par)}${row(t(UI.fam.spouses),r.spo)}${row(t(UI.fam.siblings),r.sib)}${row(t(UI.fam.children),r.chi)}</dl>
+    <div style="margin-top:8px"><a onclick="go('tree','${id}')" style="font-size:12.5px">→ ${t(UI.nav.tree)}</a></div></div>`;
+}
+function vSources(){
+  return `<h2 class="page">${t(UI.nav.sources)}</h2><div class="page-sub">${t(UI.sourcesSub)}</div>
+    <div class="card" style="border-left:5px solid var(--gold);margin-bottom:22px">
+      <h3>📥 ${t(UI.einTitle)}</h3>
+      <div class="meta" style="margin-top:10px">${t(UI.einWayB)}</div>
+      <p style="font-size:14px;color:var(--ink-soft);margin:4px 0 8px">${t(UI.einFamText)}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        ${(window.INTAKE&&INTAKE.uploadUrl)?`<a class="btn" style="text-decoration:none" href="${INTAKE.uploadUrl}" target="_blank" rel="noopener">⬆ ${t(UI.einUpload)}</a>`:''}
+        ${(window.INTAKE&&INTAKE.email)?`<a class="btn ghost" style="text-decoration:none" href="mailto:${INTAKE.email}?subject=Quellenmeldung%20Familienarchiv">✉ ${t(UI.einMail)}</a>`:''}
+      </div>
+      <div class="meta">${t(UI.einWayA)}</div>
+      <p style="font-size:14px;color:var(--ink-soft);margin:4px 0 8px">${t(UI.einText)}</p>
+      <details><summary style="cursor:pointer;font-family:var(--sans);font-size:13px;color:var(--accent)">${t(UI.einForm)}</summary>
+        <div style="max-width:560px">
+          ${efield('q_title',UI.einT1,'')}${efield('q_type',UI.einT2,'')}${efield('q_date',UI.einT3,'')}
+          ${efield('q_prov',UI.einT4,'')}${earea('q_note',UI.einT5,'',3)}
+          <div style="margin-top:12px"><button class="btn" onclick="einDownload()">⬇ ${t(UI.einBtn)}</button></div>
+        </div></details></div>
+    <div class="grid cols3">${SOURCES.map(cardSource).join('')}</div>`;
+}
+function fakeScan(){
+  let lines='';
+  for(let i=0;i<9;i++){const y=34+i*18;const w=60+((i*37)%25);
+    lines+=`<path d="M22 ${y} q ${w/3} -4 ${w} 0 q ${w/2.6} 4 ${w*1.6} -1" stroke="#6d5b3f" stroke-width="1.1" fill="none" opacity="${0.55+(i%3)*0.12}"/>`;}
+  return `<svg viewBox="0 0 220 220" role="img" aria-label="Faksimile-Platzhalter">
+    <rect x="6" y="6" width="208" height="208" fill="#f6efdc" stroke="#dccfae"/>
+    <path d="M14 12 l 4 200" stroke="#e4d7b6" stroke-width="3"/>${lines}
+    <text x="110" y="205" text-anchor="middle" font-size="7" fill="#a3906d" font-family="sans-serif">— ${t(UI.scanPh)} —</text></svg>`;
+}
+function vSource(id,extra){
+  const s=S(id); if(!s) return '<p class="empty">?</p>';
+  if(!s.pages.length){
+    return `<a class="backlink" onclick="go('sources')">← ${t(UI.nav.sources)}</a>
+  <div class="detail-head"><div><h2 class="page">${t(s.title)}</h2>
+    <div class="page-sub"><span class="badge type">${t(s.type)}</span> &nbsp;${statusBadge(s.status)} &nbsp; ${s.sig} · ${s.date}</div></div></div>
+  <div class="card" style="margin-top:6px"><div class="meta">${t(UI.srcMeta.prov)}</div>
+    <p style="font-size:13.5px;font-family:var(--sans);color:var(--ink-soft)">${t(s.prov)}</p>
+    <hr class="rule" style="margin:12px 0"><div class="meta">${t(UI.summary)}</div>
+    <p style="font-size:14.5px">${t(s.summary)}</p><div class="chips">${chipTags(s.tags)}</div></div>`;
+  }
+  const parts=(extra||'dipl:0').split(':');
+  const tab=parts[0]||'dipl';
+  const pi=Math.max(0,Math.min(parseInt(parts[1]||'0',10)||0,s.pages.length-1));
+  const pg=s.pages[pi];
+  const meta=UI.srcMeta;
+  const body= tab==='dipl'?`<div class="transcript">${renderTranscript(pg.dipl)}</div><div class="note">${t(UI.uncNote)}</div>`
+    : tab==='read'?`<div class="transcript">${esc(pg.read.de)}</div>`
+    : tab==='en'?`<div class="transcript">${pg.read.en?esc(pg.read.en):t(UI.translMissing)}</div>`
+    : `<div class="transcript">${pg.read.pl?esc(pg.read.pl):t(UI.translMissing)}</div>`;
+  const tabBtn=(key,label)=>`<button class="${tab===key?'active':''}" onclick="go('source','${id}','${key}:${pi}')">${label}</button>`;
+  const pageNav=s.pages.length>1?`<div class="filterbar" style="margin:16px 0 0">${s.pages.map((p,i)=>`<button class="${i===pi?'active':''}" onclick="go('source','${id}','${tab}:${i}')">${p.label||t(UI.page)+' '+p.n}</button>`).join('')}</div>`:'';
+  return `<a class="backlink" onclick="go('sources')">← ${t(UI.nav.sources)}</a>
+  <div class="detail-head"><div><h2 class="page">${t(s.title)}</h2>
+    <div class="page-sub"><span class="badge type">${t(s.type)}</span> &nbsp;${statusBadge(s.status)}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="propose" onclick="mappeAdd('page','${id}',${pi})">🗂 ${t(UI.mappeAdd)}</button>
+      ${ADMIN?`<button class="propose" onclick="editPage('${id}',${pi})">🛠 ${t(UI.adminEdit)}</button>`:''}
+      <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button></div></div>
+  <div class="card" style="margin-top:6px"><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;font-family:var(--sans);font-size:13px">
+    <div><div class="meta">${t(meta.sig)}</div>${s.sig}</div>
+    <div><div class="meta">${t(meta.author)}</div>${s.author?`<a onclick="go('person','${s.author}')">${P(s.author).name}</a>`:'—'}</div>
+    <div><div class="meta">${t(meta.addressee)}</div>${s.addressee?`<a onclick="go('person','${s.addressee}')">${P(s.addressee).name}</a>`:'—'}</div>
+    <div><div class="meta">${t(meta.date)}</div>${s.date}</div>
+    <div><div class="meta">${t(meta.prov)}</div>${t(s.prov)}</div></div>
+    <hr class="rule" style="margin:14px 0"><div class="meta">${t(UI.summary)}</div>
+    <p style="font-size:14.5px">${t(s.summary)}</p><div class="chips">${chipTags(s.tags)}</div></div>
+  ${pageNav}
+  <div class="source-layout">
+    <div class="scanbox">${(typeof IMGS!=='undefined'&&pg.img&&IMGS[pg.img])?`<img src="${IMGS[pg.img]}" alt="${s.sig}" style="width:100%;display:block;border:1px solid #d8cbae">`:fakeScan()}<div class="scan-caption">${s.sig} · ${pg.label||t(UI.page)+' '+pg.n}</div></div>
+    <div><div class="tabs">${tabBtn('dipl',t(UI.tabDipl))}${tabBtn('read',t(UI.tabRead))}${tabBtn('en',t(UI.tabEN))}${tabBtn('pl',t(UI.tabPL))}</div>${body}</div>
+  </div>`;
+}
+function vTimeline(){
+  const evs=[...EVENTS].sort((a,b)=>a.date.localeCompare(b.date));
+  return `<h2 class="page">${t(UI.nav.timeline)}</h2><div class="page-sub">${t(UI.timelineSub)}</div>
+  <ul class="timeline">${evs.map(e=>`<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p>
+    <div class="chips">${e.persons.map(pid=>`<span class="chip" onclick="go('person','${pid}')">${P(pid).name}</span>`).join('')}
+    ${e.sources.map(sid=>`<span class="chip" style="color:var(--gold)" onclick="go('source','${sid}')">${S(sid).sig}</span>`).join('')}</div></li>`).join('')}</ul>`;
+}
+let TH=[];
+function treeGo(id){
+  const cur=(VIEW.name==='tree')?(VIEW.id&&P(VIEW.id)?VIEW.id:'thomas'):null;
+  if(cur&&cur!==id){TH.push(cur); if(TH.length>40)TH.shift();}
+  go('tree',id);
+}
+function treeBack(){go('tree',TH.pop()||'thomas');}
+function treeJump(i){const target=TH[i];TH=TH.slice(0,i);go('tree',target);}
+function treeCard(id,big){
+  const p=P(id); if(!p) return '';
+  const dates=(p.born&&p.born!=='?'?'*'+p.born:'')+(p.died?' · †'+p.died:'');
+  return `<div class="card" style="cursor:pointer;padding:${big?'14px 18px':'9px 13px'};${big?'border-left:5px solid var(--accent);':''}" onclick="treeGo('${id}')">
+    <b style="font-size:${big?'17':'13.5'}px">${p.name}</b>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}
+    <div class="meta" style="margin:2px 0 0">${dates||'—'}${big&&p.bornp?`<br>*&nbsp;${p.bornp}`:''}${big&&p.diedp?`<br>†&nbsp;${p.diedp}`:''}</div>
+    ${big?`<div style="margin-top:8px"><a onclick="event.stopPropagation();go('person','${id}')" style="font-family:var(--sans);font-size:12.5px">${t(UI.openArticle)} →</a></div>`:''}
+  </div>`;
+}
+function vTree(focus){
+  focus=(focus&&P(focus))?focus:'thomas';
+  const r=(window.RELX&&RELX[focus])||{par:[],spo:[],chi:[],sib:[]};
+  const cards=ids=>`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${ids.map(i=>treeCard(i)).join('')||`<span class="empty" style="font-size:13px">—</span>`}</div>`;
+  const grp=(arrow,lbl,ids,extra)=>`<div class="tgroup"${extra?` style="${extra}"`:''}><div class="tlabel">${arrow}&nbsp; ${lbl}</div>${cards(ids)}</div>`;
+  const trail=[...TH,focus];
+  const crumbs=trail.map((id,i)=>i===trail.length-1
+    ?`<b style="color:var(--ink)">${P(id)?P(id).name:id}</b>`
+    :`<a onclick="treeJump(${i})">${P(id)?P(id).name:id}</a>`).join(' &rsaquo; ');
+  return `<h2 class="page">${t(UI.nav.tree)}</h2><div class="page-sub">${t(UI.treeSub)}</div>
+  <div class="filterbar" style="align-items:center;gap:12px">
+    ${TH.length?`<button onclick="treeBack()">← ${t(UI.treeBack)}</button>`:''}
+    <span class="crumbs">${crumbs}</span>
+  </div>
+  <div class="tree3">
+    ${grp('▲',t(UI.fam.parents),r.par,'justify-self:center;min-width:min(620px,100%)')}
+    <div class="tree-mid">
+      ${grp('◀',t(UI.fam.siblings),r.sib)}
+      <div style="display:flex;justify-content:center">${treeCard(focus,true)}</div>
+      ${grp('▶',t(UI.fam.spouses),r.spo)}
+    </div>
+    ${grp('▼',t(UI.fam.children),r.chi,'justify-self:center;min-width:min(620px,100%)')}
+  </div>`;
+}
+function vStrands(){
+  return `<h2 class="page">${t(UI.nav.strands)}</h2><div class="page-sub">${t(UI.strandsSub)}</div>
+  <div class="grid cols2">${NARRATIVES.map(n=>`<div class="card"><h3>${t(n.title)}</h3>
+    <p style="font-size:14.5px;color:var(--ink-soft);margin:8px 0">${t(n.teaser)}</p>
+    <div class="meta">${t(UI.sourcesCited)}: ${n.sources.map(sid=>`<a onclick="go('source','${sid}')">${S(sid).sig}</a>`).join(' · ')}</div>
+    <div style="margin-top:10px"><button class="btn" onclick="openModal()">${t(UI.readStrand)} →</button></div></div>`).join('')}</div>`;
+}
+function vTag(tg){
+  const srcs=SOURCES.filter(s=>s.tags.includes(tg));
+  return `<a class="backlink" onclick="go('home')">← Start</a>
+  <h2 class="page">${t(UI.taggedWith)}: „${t(TAGS[tg])}"</h2><div class="page-sub"></div>
+  <div class="grid cols3">${srcs.map(cardSource).join('')||`<p class="empty">${t(UI.noResults)}</p>`}</div>`;
+}
+function hl(text,q){
+  const i=text.toLowerCase().indexOf(q.toLowerCase()); if(i<0)return esc(text.slice(0,150));
+  const a=Math.max(0,i-60);
+  return (a>0?'… ':'')+esc(text.slice(a,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length,i+q.length+90))+' …';
+}
+function vSearch(q){
+  const ql=q.toLowerCase();
+  const pHits=PERSONS.filter(p=>(p.name+' '+p.nameForms+' '+stripHtml(t(p.bio))).toLowerCase().includes(ql));
+  const sHits=[];
+  SOURCES.forEach(s=>{
+    let hay=t(s.title)+' '+t(s.summary)+' '+s.sig;
+    s.pages.forEach(pg=>{hay+=' '+stripHtml(pg.dipl)+' '+pg.read.de+' '+pg.read.en+' '+pg.read.pl;});
+    if(hay.toLowerCase().includes(ql))sHits.push({s,hay});
+  });
+  const eHits=EVENTS.filter(e=>(t(e.title)+' '+t(e.text)).toLowerCase().includes(ql));
+  const none=!pHits.length&&!sHits.length&&!eHits.length;
+  return `<h2 class="page">${t(UI.results)} „${esc(q)}"</h2><div class="page-sub"></div>
+  ${none?`<p class="empty">${t(UI.noResults)}</p>`:''}
+  ${pHits.length?`<div class="result-block"><h3>${t(UI.inPersons)}</h3><div class="grid cols3">${pHits.map(cardPerson).join('')}</div></div>`:''}
+  ${sHits.length?`<div class="result-block"><h3>${t(UI.inSources)}</h3>${sHits.map(h=>`<div class="card" style="margin-bottom:12px"><h3><a onclick="go('source','${h.s.id}')">${t(h.s.title)}</a></h3><p style="font-size:14px;color:var(--ink-soft)">${hl(h.hay,q)}</p></div>`).join('')}</div>`:''}
+  ${eHits.length?`<div class="result-block"><h3>${t(UI.inEvents)}</h3><ul class="timeline">${eHits.map(e=>`<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p></li>`).join('')}</ul></div>`:''}`;
+}
+function doSearch(){const q=document.getElementById('searchInput').value.trim();if(q)go('search',q);}
+
+/* ---------- Admin-Modus: Bearbeiten, Export, Import ---------- */
+let ADMIN_PW='Annchen1923';
+let ADMIN=false, EDITCOUNT=0;
+const eq=s=>String(s??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function efield(id,lbl,val){return `<label class="elab" for="${id}">${typeof lbl==='string'?lbl:t(lbl)}</label><input class="ein" id="${id}" value="${eq(val)}">`;}
+function earea(id,lbl,val,rows){return `<label class="elab" for="${id}">${typeof lbl==='string'?lbl:t(lbl)}</label><textarea class="ein" id="${id}" rows="${rows||4}">${eq(val)}</textarea>`;}
+function adminToggle(){
+  if(ADMIN){ADMIN=false;render();return;}
+  const pw=prompt(t(UI.adminPrompt));
+  if(pw===ADMIN_PW){ADMIN=true;render();}
+  else if(pw!==null){alert(t(UI.adminWrong));}
+}
+function editPerson(id){
+  const p=P(id);if(!p)return;
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:660px;max-height:86vh;overflow:auto"><h3>🛠 ${p.name}</h3>
+   ${efield('e_name',UI.eName,p.name)}${efield('e_forms',UI.eForms,p.nameForms)}
+   ${efield('e_born','* (geb.)',p.born)}${efield('e_died','† (gest.)',p.died)}
+   ${earea('e_biode','Artikel DE (HTML)',(p.bio&&p.bio.de)||'',5)}
+   ${earea('e_bioen','Artikel EN (HTML)',(p.bio&&p.bio.en)||'',5)}
+   ${earea('e_biopl','Artikel PL (HTML)',(p.bio&&p.bio.pl)||'',5)}
+   <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+   <button class="btn" onclick="savePerson('${id}')">${t(UI.adminSave)}</button></div></div></div>`;
+}
+function savePerson(id){
+  const p=P(id);if(!p)return;
+  const v=x=>document.getElementById(x).value;
+  p.name=v('e_name');p.nameForms=v('e_forms');p.born=v('e_born');p.died=v('e_died');
+  const bd=v('e_biode'),be=v('e_bioen'),bp=v('e_biopl');
+  if(bd||be||bp) p.bio={de:bd,en:be,pl:bp};
+  EDITCOUNT++;closeModal();render();
+}
+function editPage(sid,pi){
+  const s=S(sid);if(!s)return;const pg=s.pages[pi];if(!pg)return;
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:720px;max-height:86vh;overflow:auto"><h3>🛠 ${t(s.title)} — ${pg.label||pg.n}</h3>
+   ${efield('e_label','Label',pg.label||'')}
+   ${earea('e_dipl',t(UI.tabDipl),pg.dipl,8)}
+   ${earea('e_rde',t(UI.tabRead)+' (DE)',pg.read.de,5)}
+   ${earea('e_ren',t(UI.tabEN),pg.read.en||'',5)}
+   ${earea('e_rpl',t(UI.tabPL),pg.read.pl||'',5)}
+   <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+   <button class="btn" onclick="savePage('${sid}',${pi})">${t(UI.adminSave)}</button></div></div></div>`;
+}
+function savePage(sid,pi){
+  const s=S(sid);const pg=s.pages[pi];
+  const v=x=>document.getElementById(x).value;
+  pg.label=v('e_label');pg.dipl=v('e_dipl');
+  pg.read.de=v('e_rde');pg.read.en=v('e_ren');pg.read.pl=v('e_rpl');
+  EDITCOUNT++;closeModal();render();
+}
+function dataExport(){
+  const data={version:1,archive:'wessling',persons:PERSONS,sources:SOURCES,events:EVENTS,narratives:NARRATIVES};
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='wessling-archiv-daten.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+function dataImport(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{try{
+      const d=JSON.parse(r.result);
+      if(d.persons){PERSONS.length=0;PERSONS.push(...d.persons);}
+      if(d.sources){SOURCES.length=0;SOURCES.push(...d.sources);}
+      if(d.events){EVENTS.length=0;EVENTS.push(...d.events);}
+      if(d.narratives){NARRATIVES.length=0;NARRATIVES.push(...d.narratives);}
+      alert(t(UI.adminImported));render();
+    }catch(e){alert('Import: '+e.message);}};
+    r.readAsText(inp.files[0]);};
+  inp.click();
+}
+function einDownload(){
+  const v=x=>document.getElementById(x)?document.getElementById(x).value:'';
+  const txt=`QUELLENMELDUNG — Wessling Familienarchiv\n========================================\nTitel:      ${v('q_title')}\nTyp:        ${v('q_type')}\nZeitraum:   ${v('q_date')}\nHerkunft:   ${v('q_prov')}\nBemerkung:  ${v('q_note')}\nGemeldet:   ${new Date().toLocaleString()}\n\n→ Diese Datei zusammen mit den Scans in den OneDrive-Ordner\n  "Family Archive/Content" legen. Claude verarbeitet die Quelle\n  in der nächsten Arbeitssitzung.`;
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='Quellenmeldung.txt';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
+/* ---------- E1: Frag das Archiv (Offline-Assistent) ---------- */
+let QALOG=[];
+const STOPTOK=['wessling','adams','peters','ballin','ganz','mayer','wann','wurde','geboren','gestorben','was','wer','wie','welche','briefe','brief'];
+function qaMatchPersons(ql){
+  const res=[];
+  for(const p of PERSONS){
+    const toks=(p.name+' '+(p.nameForms||'')).toLowerCase()
+      .replace(/[„“”"()\[\],.;:!?]/g,' ').split(/\s+/)
+      .filter(w=>w.length>=4&&!STOPTOK.includes(w));
+    let best=0;
+    for(const tk of toks){ if(ql.includes(tk)) best=Math.max(best,tk.length); }
+    if(best) res.push([best,p]);
+  }
+  res.sort((a,b)=>b[0]-a[0]);
+  const seen=new Set(), out=[];
+  for(const [s,p] of res){ if(!seen.has(p.id)){seen.add(p.id);out.push(p);} if(out.length>=3)break; }
+  return out;
+}
+function qaPersonBlock(p){
+  const dates=(p.born&&p.born!=='?'?t(UI.born)+' '+p.born+(p.bornp?' — '+p.bornp:''):'')+
+    (p.died?'<br>'+t(UI.died)+' '+p.died+(p.diedp?' — '+p.diedp:''):'');
+  const r=window.RELX&&RELX[p.id];
+  const rel=r?[[UI.fam.parents,r.par],[UI.fam.spouses,r.spo],[UI.fam.children,r.chi]]
+    .filter(x=>x[1].length)
+    .map(x=>`${t(x[0])}: ${x[1].slice(0,6).map(i=>P(i)?`<a onclick="go('person','${i}')">${P(i).name}</a>`:'').filter(Boolean).join(', ')}`)
+    .join('<br>'):'';
+  const men=mentionsOf(p.id);
+  return `<div style="display:flex;gap:12px;align-items:flex-start">
+   ${(p.img&&IMGS[p.img])?`<img src="${IMGS[p.img]}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`:''}
+   <div><b><a onclick="go('person','${p.id}')">${p.name}</a></b>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}
+   <div class="meta" style="margin:3px 0">${dates||p.nameForms||'—'}</div>
+   ${rel?`<div style="font-size:13px;font-family:var(--sans)">${rel}</div>`:''}
+   ${men.length?`<div class="meta" style="margin-top:5px">${t(UI.qaMentions)}: ${men.slice(0,4).map(m=>`<a onclick="go('source','${m.src.id}')">${m.src.sig}</a>`).join(' · ')}</div>`:''}
+   <div style="margin-top:5px;font-family:var(--sans);font-size:12.5px"><a onclick="go('person','${p.id}')">${t(UI.openArticle)} →</a> &nbsp; <a onclick="go('tree','${p.id}')">${t(UI.nav.tree)} →</a></div>
+   </div></div>`;
+}
+function qaAnswer(q){
+  const ql=' '+q.toLowerCase()+' ';
+  const parts=[];
+  const pers=qaMatchPersons(ql);
+  pers.forEach(p=>parts.push(qaPersonBlock(p)));
+  const years=[...new Set((q.match(/\b(1[5-9]\d\d|20\d\d)\b/g)||[]))];
+  for(const y of years){
+    const evs=EVENTS.filter(ev=>String(ev.date).startsWith(y)||t(ev.title).includes(y)||t(ev.text).includes(y));
+    const srcs=SOURCES.filter(s=>String(s.date).includes(y));
+    if(evs.length) parts.push(`<div class="meta" style="margin-bottom:4px">${t(UI.qaEvents)} ${y}:</div>`+
+      evs.map(ev=>`<div style="margin-bottom:6px"><b>${t(ev.title)}</b><br><span style="font-size:13.5px">${t(ev.text)}</span> <span class="meta">${ev.sources.map(sid=>S(sid)?`<a onclick="go('source','${sid}')">${S(sid).sig}</a>`:'').join(' ')}</span></div>`).join(''));
+    if(srcs.length) parts.push(`<div class="meta" style="margin:4px 0">${t(UI.qaSources)} (${y}):</div>`+
+      srcs.map(s=>`<div>• <a onclick="go('source','${s.id}')">${t(s.title)}</a></div>`).join(''));
+  }
+  const tagHits=Object.keys(TAGS).filter(tg=>['de','en','pl'].some(l=>{
+    const lab=(TAGS[tg][l]||'').toLowerCase(); return lab.length>=4&&ql.includes(lab.split(' ')[0]);
+  }));
+  for(const tg of tagHits.slice(0,2)){
+    const srcs=SOURCES.filter(s=>s.tags&&s.tags.includes(tg));
+    if(srcs.length) parts.push(`<div class="meta" style="margin:4px 0">${t(UI.taggedWith)} „${t(TAGS[tg])}":</div>`+
+      srcs.map(s=>`<div>• <a onclick="go('source','${s.id}')">${t(s.title)}</a></div>`).join(''));
+  }
+  if(!parts.length){
+    const hits=[];
+    SOURCES.forEach(s=>{let hay=t(s.title)+' '+t(s.summary);
+      s.pages.forEach(pg=>{hay+=' '+pg.read.de+' '+(pg.read[LANG]||'');});
+      if(hay.toLowerCase().includes(q.toLowerCase())) hits.push({s,hay});});
+    if(hits.length) parts.push(`<div class="meta" style="margin-bottom:4px">${t(UI.qaFallback)}</div>`+
+      hits.slice(0,4).map(h=>`<div style="margin-bottom:6px"><a onclick="go('source','${h.s.id}')">${t(h.s.title)}</a><br><span style="font-size:13px">${hl(h.hay,q)}</span></div>`).join(''));
+  }
+  if(!parts.length) parts.push(`<span style="font-size:14px">${t(UI.qaNothing)}</span>`);
+  return parts.join('<hr class="rule" style="margin:10px 0">');
+}
+function qaBubble(m,i){
+  if(m.who==='u') return `<div style="text-align:right;margin:12px 0"><span style="display:inline-block;background:var(--accent);color:#f6ecdd;border-radius:14px 14px 2px 14px;padding:8px 14px;font-family:var(--sans);font-size:14px;max-width:80%;text-align:left">${m.html}</span></div>`;
+  const ai=(window.AICFG&&AICFG.endpoint)?`<div style="margin-top:8px"><button class="propose" onclick="qaAI(${i})">🤖 ${t(UI.qaAI)}</button><div id="aislot${i}"></div></div>`:'';
+  return `<div style="margin:12px 0"><div class="card" style="border-left:4px solid var(--gold)">${m.html}${ai}</div></div>`;
+}
+function qaAsk(q){
+  const inp=document.getElementById('qaIn');
+  q=q||(inp?inp.value.trim():''); if(!q)return;
+  QALOG.push({who:'u',html:esc(q),q});
+  QALOG.push({who:'a',html:qaAnswer(q),q});
+  if(QALOG.length>40)QALOG=QALOG.slice(-40);
+  render();
+  window.scrollTo(0,document.body.scrollHeight);
+  const inp2=document.getElementById('qaIn'); if(inp2){inp2.value='';inp2.focus();}
+}
+function qaContext(q){
+  let ctx='';
+  const add=s=>{if(ctx.length<7000)ctx+=s+'\n';};
+  qaMatchPersons(' '+q.toLowerCase()+' ').forEach(p=>{
+    add(p.name+' | '+(p.born||'')+' '+(p.bornp||'')+' | '+(p.died||'')+' '+(p.diedp||''));
+    if(p.bio)add(stripHtml(t(p.bio)).slice(0,900));
+  });
+  SOURCES.forEach(s=>{let hay=(t(s.title)+' '+t(s.summary)).toLowerCase();
+    const qtoks=q.toLowerCase().split(/\s+/).filter(w=>w.length>=4);
+    if(qtoks.some(w=>hay.includes(w))){add(t(s.title)+': '+t(s.summary));}
+    s.pages.forEach(pg=>{ if(qtoks.some(w=>pg.read.de.toLowerCase().includes(w))) add(pg.read.de.slice(0,900)); });
+  });
+  return ctx.slice(0,8000);
+}
+async function qaAI(i){
+  const m=QALOG[i]; if(!m)return;
+  const el=document.getElementById('aislot'+i); if(!el)return;
+  el.innerHTML=`<div class="meta" style="margin-top:6px">${t(UI.qaAIWait)}</div>`;
+  try{
+    const r=await fetch(AICFG.endpoint,{method:'POST',
+      headers:{'Content-Type':'application/json','X-Archive-Token':AICFG.token||''},
+      body:JSON.stringify({question:m.q,lang:LANG,context:qaContext(m.q)})});
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json();
+    el.innerHTML=`<div style="margin-top:8px;background:var(--paper-deep);border-radius:6px;padding:10px 12px;font-size:14px">🤖 ${esc(j.answer||'')}</div>`;
+  }catch(err){ el.innerHTML=`<div class="meta" style="margin-top:6px">${t(UI.qaAIErr)}</div>`; }
+}
+function vAsk(){
+  const ex={de:['Wer war Irene?','Wann wurde Fredi Durra geboren?','Was geschah 1943?','Poesiealbum'],
+    en:['Who was Irene?','When was Fredi Durra born?','What happened in 1943?','Friendship album'],
+    pl:['Kim była Irene?','Kiedy urodził się Fredi Durra?','Co wydarzyło się w 1943?','Sztambuch']}[LANG]||[];
+  return `<h2 class="page">${t(UI.qaTitle)}</h2><div class="page-sub">${t(UI.qaSub)}</div>
+  <div class="filterbar">${ex.map(q=>`<button onclick="qaAsk('${q.replace(/'/g,"\\'")}')">${q}</button>`).join('')}</div>
+  <div id="qalog">${QALOG.map((m,i)=>qaBubble(m,i)).join('')}</div>
+  <div style="display:flex;gap:8px;margin-top:16px;position:sticky;bottom:12px">
+    <input id="qaIn" class="ein" style="flex:1;background:var(--card)" placeholder="${t(UI.qaPh)}" onkeydown="if(event.key==='Enter')qaAsk()">
+    <button class="btn" onclick="qaAsk()">${t(UI.qaAsk)}</button></div>`;
+}
+
+/* ---------- Sammelmappe (PDF-Export) ---------- */
+let MAPPE=[];
+function mappeAdd(kind,a,b){
+  const key=kind+':'+a+':'+(b??'');
+  if(!MAPPE.some(x=>x.key===key)) MAPPE.push({key,kind,a,b});
+  render();
+}
+function mappeRemove(i){MAPPE.splice(i,1);render();}
+function mappeMove(i,d){const j=i+d;if(j<0||j>=MAPPE.length)return;[MAPPE[i],MAPPE[j]]=[MAPPE[j],MAPPE[i]];render();}
+function mappeTitle(it){
+  if(it.kind==='person'){const p=P(it.a);return p?p.name:it.a;}
+  const s=S(it.a);if(!s)return it.a;const pg=s.pages[it.b];
+  return `${t(s.title)} — ${pg?(pg.label||t(UI.page)+' '+pg.n):''}`;
+}
+function vMappe(){
+  if(!MAPPE.length) return `<h2 class="page">${t(UI.nav.mappe)}</h2><div class="page-sub">${t(UI.mappeSub)}</div><p class="empty">${t(UI.mappeEmpty)}</p>`;
+  return `<h2 class="page">${t(UI.nav.mappe)}</h2><div class="page-sub">${t(UI.mappeSub)}</div>
+  ${MAPPE.map((it,i)=>`<div class="card" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="font-size:15px"><b>${i+1}.</b> ${mappeTitle(it)}</div>
+    <div style="display:flex;gap:6px;font-family:var(--sans)">
+      <button class="propose" onclick="mappeMove(${i},-1)">↑</button>
+      <button class="propose" onclick="mappeMove(${i},1)">↓</button>
+      <button class="propose" onclick="mappeRemove(${i})">✕ ${t(UI.mappeRemove)}</button>
+    </div></div>`).join('')}
+  <div style="margin-top:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <button class="btn" onclick="mappePrint()">⬇ ${t(UI.mappePdf)}</button>
+    <span class="meta" style="margin:0">${t(UI.mappeHint)}</span></div>`;
+}
+function stripClicks(html){return (html||'').replace(/ onclick="[^"]*"/g,'');}
+function mappePrint(){
+  const items=MAPPE.map(it=>{
+    if(it.kind==='person'){
+      const p=P(it.a);if(!p)return '';
+      const dates=(p.born&&p.born!=='?'?'*'+p.born:'')+(p.died?' · †'+p.died:'');
+      return `<section><h2>${p.name}</h2><div class="m">${dates||''} ${p.bornp?'· *'+p.bornp:''}</div>${stripClicks(t(p.bio))||'<p><i>'+t(UI.gedAutoBio)+'</i></p>'}</section>`;
+    }
+    const s=S(it.a);if(!s)return '';const pg=s.pages[it.b];if(!pg)return '';
+    const diplClean=esc(pg.dipl.replace(/<\/?(m|u)[^>]*>/g,''));
+    const tr=(LANG!=='de'&&pg.read[LANG])?`<h4>${LANG==='en'?t(UI.tabEN):t(UI.tabPL)}</h4><p>${pg.read[LANG]}</p>`:'';
+    return `<section><h2>${t(s.title)}</h2><div class="m">${s.sig} · ${pg.label||t(UI.page)+' '+pg.n} · ${s.date}</div>
+      ${(typeof IMGS!=='undefined'&&pg.img&&IMGS[pg.img])?`<img src="${IMGS[pg.img]}">`:''}
+      <h4>${t(UI.tabDipl)}</h4><pre>${diplClean}</pre>
+      <h4>${t(UI.tabRead)}</h4><p>${pg.read.de}</p>${tr}</section>`;
+  }).join('');
+  const w=window.open('','_blank');
+  if(!w){alert('Popup blockiert — bitte Popups für diese Datei erlauben.');return;}
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${t(UI.brandTitle)}</title><style>
+   body{font-family:Georgia,serif;color:#222;max-width:720px;margin:24px auto;line-height:1.55;padding:0 16px}
+   h1{font-size:19px;letter-spacing:.12em;border-bottom:2px solid #999;padding-bottom:8px}
+   h2{font-size:19px;margin:0 0 2px}
+   h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:#8a6d1f;margin:14px 0 4px}
+   .m{font-size:12px;color:#777;font-family:sans-serif;margin-bottom:8px}
+   section{page-break-inside:avoid;border-bottom:1px solid #ddd;padding:18px 0}
+   pre{white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;background:#f6f2e8;padding:10px;border-radius:4px}
+   img{max-width:45%;float:right;margin:0 0 10px 14px;border:1px solid #ccc}
+   section::after{content:"";display:block;clear:both}
+   .cite{font-size:10px;vertical-align:super;color:#8a6d1f}
+   @media print{body{margin:8mm;max-width:none}}
+  </style></head><body><h1>${t(UI.brandTitle)}</h1>${items}
+  <p style="font-size:11px;color:#999;font-family:sans-serif">${t(UI.demoBanner)}</p></body></html>`);
+  w.document.close();
+  setTimeout(()=>{try{w.focus();w.print();}catch(e){}},500);
+}
+
+/* ---------- modal ---------- */
+function openModal(){
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+    <div class="modal"><h3>✎ ${t(UI.proposeTitle)}</h3><p>${t(UI.proposeText)}</p>
+    <textarea placeholder="${t(UI.proposePh)}"></textarea>
+    <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+    <button class="btn" onclick="sent()">${t(UI.send)}</button></div></div></div>`;
+}
+function sent(){document.querySelector('.modal').innerHTML=`<p>${t(UI.thanks)}</p><div class="btn-row"><button class="btn" onclick="closeModal()">${t(UI.close)}</button></div>`;}
+function openPhoto(k){
+  if(typeof IMGS==='undefined'||!IMGS[k])return;
+  const ph=(window.PHOTOS||[]).find(x=>x.k===k);
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:780px;text-align:center"><img src="${IMGS[k]}" style="max-width:100%;max-height:68vh;border-radius:4px">
+   ${ph?`<p class="meta" style="margin-top:8px">${ph.cap}${ph.persons&&ph.persons.length?'<br>'+ph.persons.map(i=>P(i)?`<a onclick="closeModal();go('person','${i}')">${P(i).name}</a>`:'').filter(Boolean).join(' · '):''}</p>`:''}
+   <div class="btn-row" style="justify-content:center"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button></div></div></div>`;
+}
+function closeModal(){document.getElementById('modalHost').innerHTML='';}
+
+/* ---------- shell ---------- */
+function render(){
+  document.getElementById('demoBanner').textContent=t(UI.demoBanner);
+  document.getElementById('brandTitle').textContent=t(UI.brandTitle);
+  document.getElementById('brandSub').textContent=t(UI.brandSub);
+  document.getElementById('searchInput').placeholder=t(UI.searchPh);
+  document.getElementById('footer').textContent=t(UI.footer);
+  document.getElementById('adminBar').innerHTML=ADMIN?`<div style="background:var(--accent);color:#f6ecdd;font-family:var(--sans);font-size:12.5px;padding:7px 26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:60">
+    <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: ${EDITCOUNT}</span>
+    <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="dataExport()">⬇ ${t(UI.adminExport)}</button>
+    <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="dataImport()">⬆ ${t(UI.adminImport)}</button>
+    <span style="opacity:.8">${t(UI.adminExpHint)}</span>
+    <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5);margin-left:auto" onclick="adminToggle()">✕</button></div>`:'';
+  document.getElementById('langSwitch').innerHTML=['de','en','pl'].map(l=>
+    `<button class="${LANG===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('');
+  const navMap=['home','persons','sources','timeline','tree','strands','fragen','mappe'];
+  const active=['person'].includes(VIEW.name)?'persons':['source','tag'].includes(VIEW.name)?'sources':VIEW.name;
+  document.getElementById('mainNav').innerHTML=navMap.map(k=>
+    `<button class="${active===k?'active':''}" onclick="go('${k}')">${t(UI.nav[k])}${k==='mappe'&&MAPPE.length?` (${MAPPE.length})`:''}</button>`).join('');
+  const v=VIEW;
+  const app=document.getElementById('app');
+  app.innerHTML= v.name==='home'?vHome()
+    : v.name==='persons'?vPersons(v.extra)
+    : v.name==='person'?vPerson(v.id)
+    : v.name==='sources'?vSources()
+    : v.name==='source'?vSource(v.id,v.extra)
+    : v.name==='timeline'?vTimeline()
+    : v.name==='tree'?vTree(v.id)
+    : v.name==='strands'?vStrands()
+    : v.name==='tag'?vTag(v.id)
+    : v.name==='search'?vSearch(v.id)
+    : v.name==='fragen'?vAsk()
+    : v.name==='mappe'?vMappe()
+    : vHome();
+}
+Object.assign(UI, {"brandTitle": {"de": "WESSLING FAMILIENARCHIV", "en": "WESSLING FAMILY ARCHIVE", "pl": "ARCHIWUM RODZINY WESSLING"}, "footer": {"de": "Wessling-Familienarchiv · privat, nur für die Familie · Transkriptionen in familiärer Prüfung", "en": "Wessling family archive · private, family only · transcriptions under family review", "pl": "Archiwum rodziny Wessling · prywatne, tylko dla rodziny · transkrypcje w trakcie weryfikacji"}});
+ADMIN_PW="Annchen1923";
+window.AICFG={"endpoint": "", "token": ""};
+window.INTAKE={"uploadUrl": "", "email": "thomas@ecowindows.co.nz"};
+render();
+</script>
+</body>
+</html>
