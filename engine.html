@@ -126,6 +126,9 @@
   .tl-dec{font-family:var(--sans);font-size:12px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase;margin:22px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px;list-style:none}
   .tl-life h4{font-weight:normal;font-size:14.5px;margin:0}
   .tl-life{padding:2px 0}
+  .tl-cent{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:12px;padding:4px 16px;box-shadow:var(--shadow)}
+  .tl-cent summary{cursor:pointer;font-family:Georgia,serif;font-size:17px;padding:10px 0;color:var(--accent)}
+  .tl-cent[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}
   .result-hit{margin-bottom:10px;cursor:pointer;transition:border-color .15s}
   .result-hit:hover{border-color:var(--accent)}
   @media(max-width:640px){nav.main button{font-size:12px;padding:7px 7px}.stats{grid-template-columns:repeat(3,1fr)}}
@@ -324,6 +327,9 @@ const UI={
   factsTitle:{de:'Im Überblick',en:'At a glance',pl:'W skrócie'},
   fNames:{de:'Namensformen',en:'Name forms',pl:'Formy imienia'},
   fDates:{de:'Lebensdaten',en:'Dates',pl:'Daty życia'},
+  fKin:{de:'Verwandtschaft',en:'Kinship',pl:'Pokrewieństwo'},
+  kinOf:{de:'von',en:'of',pl:'—'},
+  kinMarried:{de:'angeheiratet',en:'by marriage',pl:'przez małżeństwo'},
   fStrand:{de:'Familienstrang',en:'Family line',pl:'Linia rodzinna'},
   fRel:{de:'Beziehungen',en:'Relations',pl:'Relacje'},
   fStatus:{de:'Status',en:'Status',pl:'Status'},
@@ -407,7 +413,18 @@ const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const stripHtml=s=>s.replace(/<[^>]*>/g,' ');
 
 function setLang(l){LANG=l;render();}
-function go(name,id,extra){VIEW={name,id,extra};render();window.scrollTo(0,0);}
+const HWIN=(()=>{try{void window.top.history;return window.top;}catch(e){return window;}})();
+let FROMPOP=false;
+function go(name,id,extra){
+  VIEW={name,id,extra};render();window.scrollTo(0,0);
+  if(!FROMPOP){try{HWIN.history.pushState({wfa:VIEW},'');}catch(e){}}
+}
+try{
+  HWIN.history.replaceState({wfa:{name:'home'}},'');
+  HWIN.addEventListener('popstate',e=>{
+    if(e.state&&e.state.wfa){FROMPOP=true;const v=e.state.wfa;VIEW=v;render();window.scrollTo(0,0);FROMPOP=false;}
+  });
+}catch(e){}
 
 function renderTranscript(dipl){
   return esc(dipl)
@@ -500,9 +517,73 @@ function vPerson(id){
       <dt>${t(UI.fNames)}</dt><dd>${p.nameForms}</dd>
       <dt>${t(UI.fDates)}</dt><dd>${t(UI.born)} ${p.born} · ${t(UI.died)} ${p.died}</dd>
       <dt>${t(UI.fStrand)}</dt><dd><div class="chips">${chipStrands(p.strand)}</div></dd>
+      ${(()=>{const k=kinToAnchor(p.id);if(!k)return'';
+        return `<dt>${t(UI.fKin)}</dt><dd>${k.married?t(UI.kinMarried)+': ':''}${k.term} ${t(UI.kinOf)} <a onclick="go('person','${k.aid}')">${P(k.aid).name}</a>${k.via&&P(k.via)?` <span style="color:var(--ink-faint)">(∞ ${P(k.via).name})</span>`:''}</dd>`;})()}
       ${p.rel.length?`<dt>${t(UI.fRel)}</dt><dd>${p.rel.map(r=>P(r[0])?`<a onclick="go('person','${r[0]}')">${P(r[0]).name}</a> <span style="color:var(--ink-faint)">${r[1]}</span>`:'').join('<br>')}</dd>`:''}
     </dl></div>
     ${famBoxHtml(p.id)}</aside></div>`;
+}
+const KIN_ANCHORS=['anneliese-wessling','thomas','brigitte','irene','i282651973914','i282652294733'];
+function ancSet(id){
+  const out=new Map([[id,0]]);const st=[[id,0]];
+  while(st.length){const [c,d]=st.pop();const r=window.RELX&&RELX[c];if(!r)continue;
+    (r.par||[]).forEach(p=>{if(!out.has(p)||out.get(p)>d+1){out.set(p,d+1);st.push([p,d+1]);}});}
+  return out;
+}
+function bloodRel(xid,aid){
+  if(xid===aid)return null;
+  const ax=ancSet(xid),aa=ancSet(aid);
+  let best=null;
+  ax.forEach((v,c)=>{if(aa.has(c)){const u=aa.get(c);if(!best||u+v<best.u+best.v)best={u,v};}});
+  return best;
+}
+function kinTerm(u,v){
+  const urde=n=>n<=0?'':'Ur-'+Array(n-1).fill('ur-').join('');
+  const L=LANG;
+  const T=(de,en,pl)=>({de,en,pl}[L]||de);
+  if(v===0){ // Vorfahr
+    if(u===1)return T('Elternteil','parent','rodzic');
+    if(u===2)return T('Großvater/-mutter','grandparent','dziadek/babcia');
+    return T(urde(u-2)+'großvater/-mutter','great-'.repeat(u-2)+'grandparent','pra'.repeat(u-2)+'dziadek/-babcia');
+  }
+  if(u===0){ // Nachfahr
+    if(v===1)return T('Kind','child','dziecko');
+    if(v===2)return T('Enkel:in','grandchild','wnuk/wnuczka');
+    return T(urde(v-2)+'enkel:in','great-'.repeat(v-2)+'grandchild','pra'.repeat(v-2)+'wnuk/-wnuczka');
+  }
+  if(u===1&&v===1)return T('Geschwister','sibling','rodzeństwo');
+  if(v===1){ // Geschwister eines Vorfahren
+    if(u===2)return T('Onkel/Tante','uncle/aunt','wuj/ciotka');
+    if(u===3)return T('Großonkel/-tante','great-uncle/-aunt','wujeczny dziadek/babcia');
+    return T(urde(u-3)+'großonkel/-tante','great-'.repeat(u-2)+'uncle/-aunt','pra'.repeat(u-3)+'wujeczny dziadek/babcia');
+  }
+  if(u===1){ // Kind von Geschwistern
+    if(v===2)return T('Neffe/Nichte','nephew/niece','bratanek/siostrzenica');
+    if(v===3)return T('Großneffe/-nichte','great-nephew/-niece','wnuk brata/siostry');
+    return T(urde(v-3)+'großneffe/-nichte','great-'.repeat(v-2)+'nephew/-niece','pra-bratanek/-siostrzenica');
+  }
+  const grad=Math.min(u,v)-1, ent=Math.abs(u-v);
+  return T('Cousin:e '+grad+'. Grades'+(ent?', '+ent+'× entfernt':''),
+           (grad===1?'first':grad===2?'second':grad+'th')+' cousin'+(ent?' '+ent+'× removed':''),
+           'kuzyn(ka) '+grad+'. stopnia'+(ent?', oddal. '+ent:''));
+}
+function kinToAnchor(xid){
+  if(!window.RELX||!RELX[xid])return null;
+  for(const aid of KIN_ANCHORS){
+    if(aid===xid||!P(aid)||!RELX[aid])continue;
+    const b=bloodRel(xid,aid);
+    if(b&&b.u+b.v>0&&b.u<=12&&b.v<=12)return {aid,term:kinTerm(b.u,b.v),married:false};
+  }
+  // angeheiratet: über Ehepartner
+  const spo=(RELX[xid]&&RELX[xid].spo)||[];
+  for(const s of spo){
+    for(const aid of KIN_ANCHORS){
+      if(aid===xid||aid===s||!P(aid)||!RELX[s])continue;
+      const b=bloodRel(s,aid);
+      if(b&&b.u+b.v>0&&b.u<=12&&b.v<=12)return {aid,term:kinTerm(b.u,b.v),married:true,via:s};
+    }
+  }
+  return null;
 }
 function famBoxHtml(id){
   const r=window.RELX&&RELX[id]; if(!r||(!r.par.length&&!r.spo.length&&!r.chi.length&&!r.sib.length)) return '';
@@ -644,8 +725,8 @@ function lifeEvents(){
   const out=[];
   PERSONS.forEach(p=>{
     const b=parseGedDate(p.born), dd=parseGedDate(p.died);
-    if(b&&parseInt(b.iso.slice(0,4),10)>=1800)out.push({iso:b.iso,disp:b.disp,kind:'life',sym:'✳',pid:p.id,name:p.name});
-    if(dd&&parseInt(dd.iso.slice(0,4),10)>=1800)out.push({iso:dd.iso,disp:dd.disp,kind:'life',sym:'✝',pid:p.id,name:p.name});
+    if(b)out.push({iso:b.iso,disp:b.disp,kind:'life',sym:'✳',pid:p.id,name:p.name});
+    if(dd)out.push({iso:dd.iso,disp:dd.disp,kind:'life',sym:'✝',pid:p.id,name:p.name});
   });
   return out;
 }
@@ -656,27 +737,47 @@ function vTimeline(){
   const life=lifeEvents();
   let items=TLF==='event'?evs:TLF==='life'?life:evs.concat(life);
   items.sort((a,b)=>a.iso.localeCompare(b.iso));
-  let lastDec=null, html='';
+  // nach Jahrhundert gruppieren
+  const cents=new Map();
   items.forEach(it=>{
-    const dec=Math.floor(parseInt(it.iso.slice(0,4),10)/10)*10;
-    if(dec!==lastDec){lastDec=dec;html+=`<h3 class="tl-dec">${dec}er</h3>`;}
+    const y=parseInt(it.iso.slice(0,4),10);
+    const c=Math.floor((y-1)/100)+1;
+    if(!cents.has(c))cents.set(c,[]);
+    cents.get(c).push(it);
+  });
+  const centKeys=[...cents.keys()].sort((a,b)=>a-b);
+  const centLbl=c=>c+'. '+({de:'Jahrhundert',en:'century',pl:'wiek'}[LANG]||'Jahrhundert');
+  const renderItem=it=>{
     if(it.kind==='event'){
       const e=it.e;
-      html+=`<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p>
+      return `<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p>
       <div class="chips">${e.persons.map(pid=>P(pid)?`<span class="chip" onclick="go('person','${pid}')">${P(pid).name}</span>`:'').join('')}
       ${e.sources.map(sid=>S(sid)?`<span class="chip" style="color:var(--gold)" onclick="go('source','${sid}')">${S(sid).sig}</span>`:'').join('')}</div></li>`;
-    } else {
-      html+=`<li class="tl-life"><div class="tl-date">${it.disp}</div><h4>${it.sym} <a onclick="go('person','${it.pid}')">${it.name}</a></h4></li>`;
     }
-  });
+    return `<li class="tl-life"><div class="tl-date">${it.disp}</div><h4>${it.sym} <a onclick="go('person','${it.pid}')">${it.name}</a></h4></li>`;
+  };
+  const blocks=centKeys.map(c=>{
+    const list=cents.get(c);
+    const hasEvent=list.some(x=>x.kind==='event');
+    const open=(c>=20)||hasEvent;
+    let lastDec=null,inner='';
+    list.forEach(it=>{
+      const dec=Math.floor(parseInt(it.iso.slice(0,4),10)/10)*10;
+      if(dec!==lastDec){lastDec=dec;inner+=`<h3 class="tl-dec">${dec}er</h3>`;}
+      inner+=renderItem(it);
+    });
+    return `<details class="tl-cent" id="cent${c}" ${open?'open':''}><summary>${centLbl(c)} <span class="meta">(${list.length})</span></summary><ul class="timeline">${inner}</ul></details>`;
+  }).join('');
   return `<h2 class="page">${t(UI.nav.timeline)}</h2><div class="page-sub">${t(UI.timelineSub)} · ${t(UI.tlLifeNote)}</div>
   <div class="filterbar">
     <button class="${TLF==='all'?'active':''}" onclick="setTlf('all')">${t(UI.tlAll)}</button>
     <button class="${TLF==='event'?'active':''}" onclick="setTlf('event')">${t(UI.tlEvents)} (${evs.length})</button>
     <button class="${TLF==='life'?'active':''}" onclick="setTlf('life')">${t(UI.tlLife)} (${life.length})</button>
   </div>
-  <ul class="timeline">${html}</ul>`;
+  <div class="chips" style="margin:0 0 16px">${centKeys.map(c=>`<span class="chip" onclick="const d=document.getElementById('cent${c}');d.open=true;d.scrollIntoView({behavior:'smooth'})">${centLbl(c)}</span>`).join('')}</div>
+  ${blocks}`;
 }
+
 let TH=[];
 function treeGo(id){
   const cur=(VIEW.name==='tree')?(VIEW.id&&P(VIEW.id)?VIEW.id:'thomas'):null;
