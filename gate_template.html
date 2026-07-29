@@ -15,26 +15,43 @@
  <p>Privates Familienarchiv — Zugang nur mit Passwort.<br>Private family archive — password required.<br>Prywatne archiwum rodzinne — wymagane has&#322;o.</p>
  <input id="pw" type="password" placeholder="Passwort / password / hasło" onkeydown="if(event.key===&#39;Enter&#39;)unlock()" autofocus="">
  <div class="err" id="err"></div>
+ <label style="display:block;font-family:'Segoe UI',sans-serif;font-size:12.5px;color:#b3a488;margin:2px 0 12px;cursor:pointer">
+  <input type="checkbox" id="remember" style="width:auto;margin:0 6px 0 0;vertical-align:middle"><span style="vertical-align:middle">Auf diesem Ger&auml;t merken &middot; Remember on this device &middot; Zapami&#281;taj na tym urz&#261;dzeniu</span>
+ </label>
  <button onclick="unlock()">&Ouml;ffnen &middot; Open &middot; Otw&oacute;rz</button>
+ <p id="forget" style="display:none;margin-top:14px"><a href="#" onclick="localStorage.removeItem('wfa_pw');document.getElementById('forget').style.display='none';document.getElementById('err').textContent='Gespeichertes Passwort entfernt / saved password removed / zapisane hasło usunięte';return false" style="color:#b3a488;font-size:12px">Passwort auf diesem Ger&auml;t vergessen &middot; Forget saved password</a></p>
 </div>
 <script>
 const B64="__B64__";
-async function unlock(){
+async function unlock(pwArg){
   const err=document.getElementById('err');err.textContent='…';
+  const auto=(typeof pwArg==='string');
   try{
     const raw=Uint8Array.from(atob(B64),c=>c.charCodeAt(0));
     const salt=raw.slice(0,16),nonce=raw.slice(16,28),ct=raw.slice(28);
-    const pw=document.getElementById('pw').value;
+    const pw=auto?pwArg:document.getElementById('pw').value;
     const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
     const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
     const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:nonce},key,ct);
     const html=new TextDecoder().decode(pt);
+    try{
+      if(!auto&&document.getElementById('remember').checked){localStorage.setItem('wfa_pw',btoa(unescape(encodeURIComponent(pw))));}
+    }catch(_){}
     const f=document.createElement('iframe');
     f.setAttribute('style','position:fixed;inset:0;width:100vw;height:100vh;border:0;background:#f6f1e7');
     f.setAttribute('title','Archiv');
     document.body.innerHTML='';document.body.style.margin='0';document.body.style.background='#f6f1e7';
     document.body.appendChild(f);
     f.srcdoc=html;
-  }catch(e){err.textContent='Falsches Passwort / wrong password / błędne hasło';}
+  }catch(e){
+    if(auto){try{localStorage.removeItem('wfa_pw');}catch(_){}}
+    else{err.textContent='Falsches Passwort / wrong password / błędne hasło';}
+  }
 }
+(function(){
+  try{
+    const s=localStorage.getItem('wfa_pw');
+    if(s){document.getElementById('forget').style.display='block';unlock(decodeURIComponent(escape(atob(s))));}
+  }catch(_){}
+})();
 </script></body></html>
