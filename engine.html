@@ -395,9 +395,13 @@ const UI={
     en:'Individually compiled documents and articles — reorder with the arrows, then save as PDF.',
     pl:'Indywidualnie zestawione dokumenty i artykuły — zmień kolejność strzałkami, potem zapisz jako PDF.'},
   adminActive:{de:'Admin-Modus aktiv',en:'Admin mode active',pl:'Tryb administratora aktywny'},
-  adminHow:{de:'Bearbeiten: In Personen-Listen auf 🛠 klicken, auf Personen- und Quellenseiten auf „🛠 Bearbeiten". Danach unbedingt „Daten exportieren" — sonst gehen die Änderungen beim Schließen verloren.',
-    en:'To edit: click 🛠 on person cards, or “🛠 Edit” on person and source pages. Afterwards use “Export data” — otherwise changes are lost when you close the page.',
-    pl:'Edycja: kliknij 🛠 na kartach osób lub „🛠 Edytuj” na stronach osób i źródeł. Potem koniecznie „Eksport danych” — inaczej zmiany przepadną po zamknięciu.'},
+  adminHow:{de:'Bearbeiten: In Personen-Listen auf 🛠 klicken, auf Personen- und Quellenseiten auf „🛠 Bearbeiten". Änderungen bleiben in diesem Browser gespeichert; für die ganze Familie sichtbar werden sie nach „Daten exportieren" + Einspielen in den Master.',
+    en:'To edit: click 🛠 on person cards, or “🛠 Edit” on person and source pages. Changes are saved in this browser; they become visible to the whole family after “Export data” + merging into the master file.',
+    pl:'Edycja: kliknij 🛠 na kartach osób lub „🛠 Edytuj” na stronach osób i źródeł. Zmiany zapisują się w tej przeglądarce; dla całej rodziny staną się widoczne po „Eksporcie danych” i scaleniu z plikiem głównym.'},
+  adminDiscard:{de:'Lokale Änderungen verwerfen',en:'Discard local changes',pl:'Odrzuć lokalne zmiany'},
+  adminDiscardAsk:{de:'Alle in diesem Browser gespeicherten Änderungen verwerfen und die Seite neu laden? (Nach dem Einspielen in den Master ist das der richtige Schritt.)',
+    en:'Discard all changes saved in this browser and reload the page? (This is the right step after they have been merged into the master file.)',
+    pl:'Odrzucić wszystkie zmiany zapisane w tej przeglądarce i przeładować stronę? (To właściwy krok po scaleniu z plikiem głównym.)'},
   adminPrompt:{de:'Admin-Passwort:',en:'Admin password:',pl:'Hasło administratora:'},
   adminWrong:{de:'Falsches Passwort.',en:'Wrong password.',pl:'Błędne hasło.'},
   adminEdit:{de:'Bearbeiten',en:'Edit',pl:'Edytuj'},
@@ -1202,6 +1206,36 @@ function snippetOf(text,q,len){
 /* ---------- Admin-Modus: Bearbeiten, Export, Import ---------- */
 let ADMIN_PW='Annchen1923';
 let ADMIN=false, EDITCOUNT=0;
+/* Lokale Speicherung der Admin-Änderungen: überlebt Neuladen im selben Browser.
+   Endgültig für alle: „Daten exportieren" → JSON in den Master einspielen → danach „verwerfen". */
+let EDITS={p:{},g:{}};
+function loadEdits(){
+  try{const s=localStorage.getItem('wfa_edits');if(s)EDITS=JSON.parse(s);}catch(e){}
+  if(!EDITS||typeof EDITS!=='object')EDITS={p:{},g:{}};
+  EDITS.p=EDITS.p||{};EDITS.g=EDITS.g||{};
+}
+function saveEdits(){try{localStorage.setItem('wfa_edits',JSON.stringify(EDITS));}catch(e){}}
+function applyEdits(){
+  loadEdits();let n=0;
+  for(const id in EDITS.p){const p=P(id);if(!p)continue;const e=EDITS.p[id];
+    ['name','nameForms','born','died'].forEach(k=>{if(e[k]!==undefined)p[k]=e[k];});
+    if(e.bio)p.bio=e.bio;n++;}
+  for(const key in EDITS.g){const [sid,pi]=key.split('|');const s=S(sid);const pg=s&&s.pages[parseInt(pi,10)];if(!pg)continue;
+    const e=EDITS.g[key];
+    if(e.label!==undefined)pg.label=e.label;if(e.dipl!==undefined)pg.dipl=e.dipl;
+    if(e.read)pg.read=e.read;n++;}
+  EDITCOUNT=n;
+}
+function discardEdits(){
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:420px"><h3>🗑 ${t(UI.adminDiscard)}</h3><p>${t(UI.adminDiscardAsk)}</p>
+   <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+   <button class="btn" onclick="discardEditsDo()">OK</button></div></div></div>`;
+}
+function discardEditsDo(){
+  try{localStorage.removeItem('wfa_edits');}catch(e){}
+  try{HWIN.location.reload();}catch(e){location.reload();}
+}
 const eq=s=>String(s??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function efield(id,lbl,val){return `<label class="elab" for="${id}">${typeof lbl==='string'?lbl:t(lbl)}</label><input class="ein" id="${id}" value="${eq(val)}">`;}
 function earea(id,lbl,val,rows){return `<label class="elab" for="${id}">${typeof lbl==='string'?lbl:t(lbl)}</label><textarea class="ein" id="${id}" rows="${rows||4}">${eq(val)}</textarea>`;}
@@ -1238,7 +1272,9 @@ function savePerson(id){
   p.name=v('e_name');p.nameForms=v('e_forms');p.born=v('e_born');p.died=v('e_died');
   const bd=v('e_biode'),be=v('e_bioen'),bp=v('e_biopl');
   if(bd||be||bp) p.bio={de:bd,en:be,pl:bp};
-  EDITCOUNT++;closeModal();render();
+  EDITS.p[id]={name:p.name,nameForms:p.nameForms,born:p.born,died:p.died,bio:p.bio};
+  saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
+  closeModal();render();
 }
 function editPage(sid,pi){
   const s=S(sid);if(!s)return;const pg=s.pages[pi];if(!pg)return;
@@ -1257,7 +1293,9 @@ function savePage(sid,pi){
   const v=x=>document.getElementById(x).value;
   pg.label=v('e_label');pg.dipl=v('e_dipl');
   pg.read.de=v('e_rde');pg.read.en=v('e_ren');pg.read.pl=v('e_rpl');
-  EDITCOUNT++;closeModal();render();
+  EDITS.g[sid+'|'+pi]={label:pg.label,dipl:pg.dipl,read:pg.read};
+  saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
+  closeModal();render();
 }
 function dataExport(){
   const data={version:1,archive:'wessling',persons:PERSONS,sources:SOURCES,events:EVENTS,narratives:NARRATIVES};
@@ -1515,6 +1553,7 @@ function render(){
     <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: <b>${EDITCOUNT}</b></span>
     <button class="btn ${EDITCOUNT?'':'ghost'}" style="${EDITCOUNT?'background:#f6ecdd;color:var(--accent);font-weight:700':'color:#f6ecdd;border-color:rgba(246,236,221,.5)'}" onclick="dataExport()">⬇ ${t(UI.adminExport)}${EDITCOUNT?' ('+EDITCOUNT+')':''}</button>
     <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="dataImport()">⬆ ${t(UI.adminImport)}</button>
+    ${EDITCOUNT?`<button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="discardEdits()">🗑 ${t(UI.adminDiscard)}</button>`:''}
     <span style="opacity:.85;flex:1;min-width:220px">${t(UI.adminHow)}</span>
     <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="adminToggle()">✕</button></div>`:'';
   document.body.style.paddingBottom=ADMIN?'70px':'';
@@ -1554,6 +1593,7 @@ Object.assign(UI, {"brandTitle": {"de": "WESSLING FAMILIENARCHIV", "en": "WESSLI
 ADMIN_PW="Annchen1923";
 window.AICFG={"endpoint": "", "token": ""};
 window.INTAKE={"uploadUrl": "https://ecowindowsnz-my.sharepoint.com/:f:/g/personal/thomas_ecowindows_co_nz/IgCx3ukSR4a8SpmpI3123i31AdSrBs_u-vMEifPqoF1LEYs", "email": "thomas@ecowindows.co.nz"};
+applyEdits();
 render();
 </script>
 </body>
