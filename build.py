@@ -21,6 +21,9 @@ def build_plain():
         js = json.dumps(data[name.lower()], ensure_ascii=False, separators=(", ", ": "))
         prefix = "const %s=" % name if kind == "const" else "window.%s=" % name
         parts.append(prefix + js + ";")
+    import datetime
+    stamp = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
+    parts.append('window.BUILDSTAMP="' + stamp + '";')
     blob = "\n".join(parts)
     assert "/*__DATA__*/" in engine, "Marker /*__DATA__*/ fehlt in engine.html"
     return engine.replace("/*__DATA__*/", blob)

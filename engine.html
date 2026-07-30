@@ -399,6 +399,8 @@ const UI={
     en:'To edit: click 🛠 on person cards, or “🛠 Edit” on person and source pages. Changes are saved in this browser; they become visible to the whole family after “Export data” + merging into the master file.',
     pl:'Edycja: kliknij 🛠 na kartach osób lub „🛠 Edytuj” na stronach osób i źródeł. Zmiany zapisują się w tej przeglądarce; dla całej rodziny staną się widoczne po „Eksporcie danych” i scaleniu z plikiem głównym.'},
   adminDiscard:{de:'Lokale Änderungen verwerfen',en:'Discard local changes',pl:'Odrzuć lokalne zmiany'},
+  savedOk:{de:'✓ Gespeichert — bleibt in diesem Browser erhalten. Für alle sichtbar nach „Daten exportieren".',en:'✓ Saved — kept in this browser. Visible to everyone after “Export data”.',pl:'✓ Zapisano — pozostanie w tej przeglądarce. Widoczne dla wszystkich po „Eksporcie danych”.'},
+  savedFail:{de:'⚠ Speichern im Browser fehlgeschlagen (Speicher blockiert?). Änderung gilt nur bis zum Neuladen — bitte sofort „Daten exportieren".',en:'⚠ Saving in the browser failed (storage blocked?). The change lasts only until reload — please “Export data” right away.',pl:'⚠ Zapis w przeglądarce nie powiódł się (pamięć zablokowana?). Zmiana obowiązuje do przeładowania — od razu użyj „Eksportu danych”.'},
   adminDiscardAsk:{de:'Alle in diesem Browser gespeicherten Änderungen verwerfen und die Seite neu laden? (Nach dem Einspielen in den Master ist das der richtige Schritt.)',
     en:'Discard all changes saved in this browser and reload the page? (This is the right step after they have been merged into the master file.)',
     pl:'Odrzucić wszystkie zmiany zapisane w tej przeglądarce i przeładować stronę? (To właściwy krok po scaleniu z plikiem głównym.)'},
@@ -1214,7 +1216,20 @@ function loadEdits(){
   if(!EDITS||typeof EDITS!=='object')EDITS={p:{},g:{}};
   EDITS.p=EDITS.p||{};EDITS.g=EDITS.g||{};
 }
-function saveEdits(){try{localStorage.setItem('wfa_edits',JSON.stringify(EDITS));}catch(e){}}
+function saveEdits(){
+  try{
+    const s=JSON.stringify(EDITS);
+    localStorage.setItem('wfa_edits',s);
+    return localStorage.getItem('wfa_edits')===s;
+  }catch(e){return false;}
+}
+function toast(msg,ok){
+  let el=document.getElementById('wfaToast');
+  if(!el){el=document.createElement('div');el.id='wfaToast';document.body.appendChild(el);}
+  el.setAttribute('style','position:fixed;right:18px;bottom:86px;z-index:200;font-family:var(--sans);font-size:13.5px;padding:11px 18px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:340px;'+(ok?'background:#3f6b45;color:#eef5ec':'background:#8a2020;color:#fbeaea'));
+  el.textContent=msg;
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.remove();},5000);
+}
 function applyEdits(){
   loadEdits();let n=0;
   for(const id in EDITS.p){const p=P(id);if(!p)continue;const e=EDITS.p[id];
@@ -1273,8 +1288,9 @@ function savePerson(id){
   const bd=v('e_biode'),be=v('e_bioen'),bp=v('e_biopl');
   if(bd||be||bp) p.bio={de:bd,en:be,pl:bp};
   EDITS.p[id]={name:p.name,nameForms:p.nameForms,born:p.born,died:p.died,bio:p.bio};
-  saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
+  const ok=saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
   closeModal();render();
+  toast(ok?t(UI.savedOk):t(UI.savedFail),ok);
 }
 function editPage(sid,pi){
   const s=S(sid);if(!s)return;const pg=s.pages[pi];if(!pg)return;
@@ -1294,8 +1310,9 @@ function savePage(sid,pi){
   pg.label=v('e_label');pg.dipl=v('e_dipl');
   pg.read.de=v('e_rde');pg.read.en=v('e_ren');pg.read.pl=v('e_rpl');
   EDITS.g[sid+'|'+pi]={label:pg.label,dipl:pg.dipl,read:pg.read};
-  saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
+  const ok=saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
   closeModal();render();
+  toast(ok?t(UI.savedOk):t(UI.savedFail),ok);
 }
 function dataExport(){
   const data={version:1,archive:'wessling',persons:PERSONS,sources:SOURCES,events:EVENTS,narratives:NARRATIVES};
@@ -1548,7 +1565,7 @@ function render(){
       Object.keys(STRANDS).map(k=>t(STRANDS[k]))))];
     dl.innerHTML=sugg.map(x=>`<option value="${esc(x)}">`).join('');
   }
-  document.getElementById('footer').textContent=t(UI.footer);
+  document.getElementById('footer').textContent=t(UI.footer)+(window.BUILDSTAMP?' · Stand: '+BUILDSTAMP:'');
   document.getElementById('adminBar').innerHTML=ADMIN?`<div style="background:var(--accent);color:#f6ecdd;font-family:var(--sans);font-size:12.5px;padding:8px 26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:fixed;left:0;right:0;bottom:0;z-index:60;box-shadow:0 -4px 16px rgba(30,20,12,.25)">
     <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: <b>${EDITCOUNT}</b></span>
     <button class="btn ${EDITCOUNT?'':'ghost'}" style="${EDITCOUNT?'background:#f6ecdd;color:var(--accent);font-weight:700':'color:#f6ecdd;border-color:rgba(246,236,221,.5)'}" onclick="dataExport()">⬇ ${t(UI.adminExport)}${EDITCOUNT?' ('+EDITCOUNT+')':''}</button>
