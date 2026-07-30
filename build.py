@@ -11,7 +11,7 @@ import json, sys, os, base64, hashlib, secrets
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ORDER = [("STRANDS","const"),("TAGS","const"),("PERSONS","const"),("SOURCES","const"),
-         ("EVENTS","const"),("NARRATIVES","const"),("RELX","window"),("PHOTOS","window"),("IMGS","const")]
+         ("EVENTS","const"),("NARRATIVES","const"),("RELX","window"),("PHOTOS","window"),("IMGS","const"),("HEROES","window")]
 
 def build_plain():
     data = json.load(open(os.path.join(HERE,"data.json"), encoding="utf-8"))

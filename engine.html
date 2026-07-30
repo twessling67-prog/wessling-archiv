@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>Wessling Familienarchiv · Wessling Family Archive</title>
 <style>
   :root{
@@ -11,8 +12,10 @@
     --accent:#7d2e2a; --accent-soft:#a2554f; --gold:#9a7b2f;
     --line:#d9cdb8; --ok:#3f6b45; --warn:#8a6d1f;
     --shadow:0 1px 3px rgba(46,36,24,.10), 0 6px 18px rgba(46,36,24,.07);
-    --serif:Georgia,'Times New Roman',serif;
+    --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
     --sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+    --f-wessling:#7d2e2a; --f-adams:#2e5f5c; --f-peters:#8a6d2f;
+    --f-ballin:#5c3a54; --f-ganz:#3d5a3c; --f-mayer:#7a5540;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--paper);color:var(--ink);font-family:var(--serif);line-height:1.6}
@@ -186,6 +189,112 @@
   .empty{color:var(--ink-faint);font-style:italic}
   footer{border-top:3px double var(--line);text-align:center;padding:26px;font-family:var(--sans);
     font-size:12px;color:var(--ink-faint)}
+  /* ---------- Redesign 2026: Navigation ---------- */
+  .navdrop{position:relative;display:inline-block}
+  .navdrop .dmenu{display:none;position:absolute;top:100%;left:0;background:var(--card);
+    border:1px solid var(--line);border-radius:0 0 8px 8px;box-shadow:0 10px 26px rgba(46,36,24,.16);
+    min-width:190px;z-index:70;padding:6px 0}
+  .navdrop:hover .dmenu,.navdrop:focus-within .dmenu{display:block}
+  .dmenu button{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;
+    font-family:var(--sans);font-size:13.5px;color:var(--ink-soft);padding:9px 16px;border-bottom:none!important}
+  .dmenu button:hover{background:var(--paper-deep);color:var(--accent)}
+  /* ---------- Redesign 2026: Startseite ---------- */
+  .vorspann{font-family:var(--sans);font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+  .hx-hero{display:grid;grid-template-columns:5fr 6fr;gap:44px;align-items:center;padding:26px 0 10px}
+  .hx-hero h1{font-family:var(--serif);font-weight:normal;font-size:clamp(28px,4vw,42px);line-height:1.16;margin:12px 0 16px}
+  .hx-hero p.intro{font-family:var(--serif);font-size:17px;color:var(--ink-soft);max-width:46ch}
+  .hx-cta{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap}
+  .btn.big{font-size:14.5px;padding:11px 22px;border-radius:8px}
+  .btn.sec{background:none;border:1.5px solid var(--accent);color:var(--accent)}
+  figure.heldenbild{margin:0}
+  figure.heldenbild .rahmen{background:#fff;padding:12px 12px 10px;border:1px solid var(--line);
+    box-shadow:0 10px 30px rgba(43,36,28,.10);transform:rotate(.4deg);cursor:pointer}
+  figure.heldenbild img{display:block;width:100%;height:auto;max-height:430px;object-fit:contain;background:#f4ecd9}
+  figure.heldenbild figcaption{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);margin-top:10px;text-align:right}
+  .suchband{margin:26px 0 44px}
+  .suchband .feld{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:4px 8px 4px 22px;box-shadow:0 4px 18px rgba(43,36,28,.06)}
+  .suchband input{flex:1;border:none;background:none;outline:none;font-family:var(--sans);
+    font-size:16px;color:var(--ink);padding:13px 0}
+  .suchband .hinweis{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);margin-top:8px;padding-left:6px}
+  .sek-kopf{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);
+    padding-bottom:9px;margin:44px 0 22px}
+  .sek-kopf h2{font-family:var(--serif);font-weight:normal;font-size:24px}
+  .sek-kopf a{font-family:var(--sans);font-size:13px}
+  .storyx{display:grid;grid-template-columns:7fr 4fr;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;box-shadow:0 6px 24px rgba(43,36,28,.07)}
+  .storyx .text{padding:30px 34px}
+  .kicker{font-family:var(--sans);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+  .storyx h3{font-family:var(--serif);font-weight:normal;font-size:28px;line-height:1.2;margin:10px 0 12px}
+  .storyx p.tz{font-family:var(--serif);font-size:15.5px;color:var(--ink-soft);max-width:58ch}
+  .storyx .smeta{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);margin:18px 0 16px}
+  .storyx .smeta b{color:var(--ink)}
+  .storyx .bild{position:relative;min-height:260px;background:var(--paper-deep)}
+  .storyx .bild img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+  .storyx .bild figcaption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(20,15,10,.72));
+    color:#f3ecdf;font-family:var(--sans);font-size:11.5px;padding:24px 14px 10px;text-align:right}
+  .fam-gitter{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .famkarte{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--fc,var(--accent));
+    border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .15s}
+  .famkarte:hover{transform:translateY(-2px)}
+  .famkarte .fk-bild{height:112px;background:var(--paper-deep);position:relative;overflow:hidden}
+  .famkarte .fk-bild img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;filter:sepia(.12)}
+  .famkarte .fk-mono{display:flex;align-items:center;justify-content:center;height:100%;
+    font-family:var(--serif);font-size:42px;color:var(--fc);opacity:.5}
+  .famkarte .fk-text{padding:14px 17px 16px}
+  .famkarte h3{font-family:var(--serif);font-weight:normal;font-size:19px;margin:0}
+  .famkarte .zeit{font-family:var(--sans);font-size:11.5px;color:var(--ink-faint);letter-spacing:.04em;margin:2px 0 7px}
+  .famkarte p{font-family:var(--sans);font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .famkarte .fk-fakten{margin-top:9px;font-family:var(--sans);font-size:12px;color:var(--ink-faint)}
+  .famkarte .fk-fakten b{color:var(--fc)}
+  .hx-zwei{display:grid;grid-template-columns:5fr 4fr;gap:20px;margin-top:44px}
+  .fund{background:var(--accent);color:#f6ecdd;border-radius:12px;padding:30px 32px}
+  .fund .kicker{color:#d9b8a0}
+  .fund blockquote{font-family:var(--serif);font-size:18.5px;line-height:1.5;margin:13px 0 14px;font-style:italic}
+  .fund .quelle{font-family:var(--sans);font-size:12.5px;color:#e8d3bd}
+  .fund .quelle a{color:#fff;text-decoration:underline}
+  .panelx{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+  .panelx h3{font-family:var(--serif);font-weight:normal;font-size:18px;margin-bottom:12px}
+  .neuliste{list-style:none}
+  .neuliste li{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);
+    font-family:var(--sans);font-size:13px;align-items:baseline;cursor:pointer}
+  .neuliste li:hover{color:var(--accent)}
+  .neuliste li:last-child{border-bottom:none}
+  .typ{font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-radius:4px;padding:2px 7px;
+    background:var(--paper);border:1px solid var(--line);color:var(--ink-faint);white-space:nowrap}
+  .neuliste .datum{margin-left:auto;font-size:11.5px;color:var(--ink-faint);white-space:nowrap}
+  .hx-fuss{display:grid;grid-template-columns:6fr 5fr;gap:20px;align-items:start;margin-top:44px}
+  .wege{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .weg{display:block;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 13px;
+    font-family:var(--sans);font-size:13px;cursor:pointer;color:var(--ink)}
+  .weg:hover{border-color:var(--accent);text-decoration:none}
+  .weg b{color:var(--accent);display:block}
+  .kennzahlen{display:flex;flex-wrap:wrap;gap:6px 20px;font-family:var(--sans);font-size:12.5px;
+    color:var(--ink-faint);align-items:baseline;padding:14px 4px}
+  .kennzahlen span{cursor:pointer}
+  .kennzahlen b{font-family:var(--serif);font-size:20px;color:var(--ink);margin-right:5px}
+  /* ---------- Redesign 2026: Geschichten ---------- */
+  .st-gitter{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  .stkarte{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s}
+  .stkarte:hover{transform:translateY(-2px)}
+  .stkarte .cover{height:150px;background:var(--paper-deep);overflow:hidden}
+  .stkarte .cover img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;filter:sepia(.1)}
+  .stkarte .stx{padding:16px 18px 18px}
+  .stkarte h3{font-family:var(--serif);font-weight:normal;font-size:20px;margin-bottom:6px}
+  .stkarte p{font-family:var(--serif);font-size:14px;color:var(--ink-soft)}
+  .kap-nav{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:26px 0 8px;font-family:var(--sans)}
+  .kap-bar{height:4px;background:var(--paper-deep);border-radius:2px;overflow:hidden;margin:6px 0 26px}
+  .kap-bar i{display:block;height:100%;background:var(--gold)}
+  .kapitel{font-family:var(--serif);font-size:17px;line-height:1.75;max-width:70ch}
+  .kapitel p{margin-bottom:16px}
+  .kap-titel{font-family:var(--serif);font-weight:normal;font-size:27px;margin:6px 0 18px}
+  @media(max-width:900px){
+    .hx-hero{grid-template-columns:1fr;gap:22px}
+    .fam-gitter{grid-template-columns:1fr 1fr}
+    .hx-zwei,.hx-fuss,.storyx{grid-template-columns:1fr}
+    .storyx .bild{min-height:200px}
+  }
+  @media(max-width:560px){.fam-gitter{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -229,9 +338,49 @@ const UI={
   brandTitle:{de:'WESSLING FAMILIENARCHIV',en:'WESSLING FAMILY ARCHIVE',pl:'ARCHIWUM RODZINY WESSLING'},
   nav:{home:{de:'Start',en:'Home',pl:'Start'},persons:{de:'Personen',en:'People',pl:'Osoby'},
     sources:{de:'Quellen',en:'Sources',pl:'Źródła'},timeline:{de:'Zeitleiste',en:'Timeline',pl:'Oś czasu'},
-    tree:{de:'Stammbaum',en:'Family tree',pl:'Drzewo genealogiczne'},strands:{de:'Erzählstränge',en:'Narratives',pl:'Opowieści'},
-    fragen:{de:'Fragen',en:'Ask',pl:'Pytania'},
-    mappe:{de:'Sammelmappe',en:'Collection',pl:'Teczka'}},
+    tree:{de:'Stammbaum',en:'Family tree',pl:'Drzewo genealogiczne'},strands:{de:'Geschichten',en:'Stories',pl:'Opowieści'},
+    fragen:{de:'Recherche',en:'Research',pl:'Poszukiwania'},
+    archiv:{de:'Archiv',en:'Archive',pl:'Archiwum'},
+    mappe:{de:'Meine Sammlung',en:'My collection',pl:'Moja kolekcja'}},
+  heroKicker:{de:'Ein privates digitales Familienmuseum',en:'A private digital family museum',pl:'Prywatne cyfrowe muzeum rodzinne'},
+  heroTitle:{de:'Briefe, Tagebücher und Lebenswege aus fast drei Jahrhunderten.',en:'Letters, diaries and life stories from almost three centuries.',pl:'Listy, dzienniki i losy z niemal trzech stuleci.'},
+  btnBrowse:{de:'Archiv durchsuchen',en:'Search the archive',pl:'Przeszukaj archiwum'},
+  btnStories:{de:'Geschichten entdecken',en:'Discover the stories',pl:'Odkryj opowieści'},
+  bigSearchPh:{de:'Personen, Quellen, Orte, Ereignisse und Texte durchsuchen …',en:'Search people, sources, places, events and texts …',pl:'Szukaj osób, źródeł, miejsc, wydarzeń i tekstów …'},
+  bigSearchHint:{de:'Vorschläge während der Eingabe · Treffer gruppiert nach Personen, Quellen, Textstellen und Ereignissen',en:'Suggestions while typing · results grouped by people, sources, passages and events',pl:'Podpowiedzi podczas pisania · wyniki pogrupowane według osób, źródeł, fragmentów i wydarzeń'},
+  featStory:{de:'Ausgewählte Geschichte',en:'Featured story',pl:'Wybrana opowieść'},
+  allStories:{de:'Alle Geschichten',en:'All stories',pl:'Wszystkie opowieści'},
+  famDiscover:{de:'Familien entdecken',en:'Discover the families',pl:'Poznaj rodziny'},
+  allPersons:{de:'Alle Personen',en:'All people',pl:'Wszystkie osoby'},
+  fundKicker:{de:'Fundstück aus dem Archiv',en:'A find from the archive',pl:'Znalezisko z archiwum'},
+  toPassage:{de:'Zur Fundstelle',en:'Go to the passage',pl:'Do fragmentu'},
+  whereStart:{de:'Neu im Archiv? Wo anfangen …',en:'New to the archive? Where to begin …',pl:'Pierwszy raz w archiwum? Od czego zacząć …'},
+  wayStory:{de:'Eine Geschichte lesen',en:'Read a story',pl:'Przeczytaj opowieść'},
+  wayPerson:{de:'Eine Person suchen',en:'Look up a person',pl:'Wyszukaj osobę'},
+  wayPersonSub:{de:'z. B. »Anneliese«',en:'e.g. “Anneliese”',pl:'np. „Anneliese”'},
+  wayTree:{de:'Den Stammbaum öffnen',en:'Open the family tree',pl:'Otwórz drzewo'},
+  wayTreeSub:{de:'Von Person zu Person',en:'From person to person',pl:'Od osoby do osoby'},
+  wayAsk:{de:'Recherche & Fragen',en:'Research & questions',pl:'Poszukiwania i pytania'},
+  wayAskSub:{de:'Offene Forschungsfragen',en:'Open research questions',pl:'Otwarte pytania badawcze'},
+  trilingualNote:{de:'Alle Inhalte dreisprachig (DE · EN · PL), durch Quellen belegt und nur für die Familie zugänglich.',en:'All content trilingual (DE · EN · PL), backed by sources and accessible to the family only.',pl:'Wszystkie treści trójjęzyczne (DE · EN · PL), poparte źródłami i dostępne tylko dla rodziny.'},
+  chapters:{de:'Kapitel',en:'chapters',pl:'rozdziały'},
+  chapterOf:{de:'Kapitel',en:'Chapter',pl:'Rozdział'},
+  readMin:{de:'Min. Lesezeit',en:'min read',pl:'min czytania'},
+  readStory:{de:'Geschichte lesen',en:'Read the story',pl:'Czytaj opowieść'},
+  storySoon:{de:'Diese Geschichte ist vorgemerkt — die ausführliche Fassung entsteht in einer der nächsten Redaktionssitzungen.',en:'This story is on the list — the full version will be written in one of the next editorial sessions.',pl:'Ta opowieść jest zaplanowana — pełna wersja powstanie podczas jednej z kolejnych sesji redakcyjnych.'},
+  onlyDe:{de:'',en:'This chapter is currently only available in German — the German original is shown below.',pl:'Ten rozdział jest na razie dostępny tylko po niemiecku — poniżej oryginał niemiecki.'},
+  famPlaces:{wessling:{de:'Köln · Mülheim · 1896 bis heute',en:'Cologne · Mülheim · 1896 to today',pl:'Kolonia · Mülheim · 1896 do dziś'},
+    ganz:{de:'Bünde · Köln · Paris · Jerusalem · 1740 bis heute',en:'Bünde · Cologne · Paris · Jerusalem · 1740 to today',pl:'Bünde · Kolonia · Paryż · Jerozolima · 1740 do dziś'},
+    ballin:{de:'Hamburg · Berlin · Köln · 1838–1993',en:'Hamburg · Berlin · Cologne · 1838–1993',pl:'Hamburg · Berlin · Kolonia · 1838–1993'},
+    adams:{de:'Köln · 1900–1985',en:'Cologne · 1900–1985',pl:'Kolonia · 1900–1985'},
+    peters:{de:'1888 bis heute',en:'1888 to today',pl:'1888 do dziś'},
+    mayer:{de:'Köln · um 1880–1900',en:'Cologne · c. 1880–1900',pl:'Kolonia · ok. 1880–1900'}},
+  famProfile:{wessling:{de:'Der Stamm des Archivs: Anneliese, ihre Tagebücher der 1980er Jahre und drei Generationen bis in die Gegenwart.',en:'The core of the archive: Anneliese, her 1980s diaries, and three generations up to the present day.',pl:'Trzon archiwum: Anneliese, jej dzienniki z lat 80. i trzy pokolenia aż po współczesność.'},
+    ganz:{de:'Buchhändler der Lengfeld’schen Buchhandlung — Aufstieg, Vertreibung und Flucht einer jüdischen Kölner Familie in alle Welt.',en:'Booksellers of the Lengfeld’sche Buchhandlung — the rise, expulsion and flight of a Jewish Cologne family across the world.',pl:'Księgarze Lengfeld’sche Buchhandlung — rozkwit, wypędzenie i ucieczka żydowskiej kolońskiej rodziny w świat.'},
+    ballin:{de:'Gottfried, Helene und die Söhne Anna Ballins: Widerstand, Haft und Erinnerung — dokumentiert in 104 Haftbriefen.',en:'Gottfried, Helene and Anna Ballin’s sons: resistance, imprisonment and remembrance — documented in 104 prison letters.',pl:'Gottfried, Helene i synowie Anny Ballin: opór, więzienie i pamięć — udokumentowane w 104 listach z więzień.'},
+    adams:{de:'Peter Adams (1900–1985) und seine Geschwister — die Verbindung zur Mayer-Linie ist eine offene Forschungsfrage.',en:'Peter Adams (1900–1985) and his siblings — the link to the Mayer line is an open research question.',pl:'Peter Adams (1900–1985) i jego rodzeństwo — związek z linią Mayer to otwarte pytanie badawcze.'},
+    peters:{de:'Der Peters-Strang aus dem Stammbaum — Quellen und Fotos werden gesucht: Hier kann die Familie beitragen.',en:'The Peters line from the family tree — sources and photos wanted: the family can contribute here.',pl:'Linia Peters z drzewa genealogicznego — poszukiwane źródła i zdjęcia: tu rodzina może pomóc.'},
+    mayer:{de:'Johanna Mayers Poesiealbum von 1891 — das älteste Stück des Archivs und ein Rätsel: Wie kam es in die Familie?',en:'Johanna Mayer’s 1891 friendship album — the oldest piece in the archive, and a riddle: how did it enter the family?',pl:'Sztambuch Johanny Mayer z 1891 r. — najstarszy obiekt archiwum i zagadka: jak trafił do rodziny?'}},
   treeBack:{de:'Zurück',en:'Back',pl:'Wstecz'},
   mappeAdd:{de:'In die Sammelmappe',en:'Add to collection',pl:'Dodaj do teczki'},
   mappeEmpty:{de:'Die Sammelmappe ist leer. Auf Quellenseiten und Personenartikeln auf „In die Sammelmappe" klicken, um Dokumente und Artikel für den PDF-Export zusammenzustellen.',
@@ -448,27 +597,130 @@ function chipStrands(arr){return arr.map(st=>`<span class="chip strand" onclick=
 function statusBadge(st){const m={done:'ok',review:'rough',rough:'rough'};return `<span class="badge ${m[st]||'rough'}">${t(UI.statusMap[st])}</span>`;}
 
 /* ---------- views ---------- */
+const FAMFOTO={wessling:'ph06',ganz:'ph22',ballin:null,adams:'ph25',peters:null,mayer:null};
+const FAMCOLOR={wessling:'var(--f-wessling)',ganz:'var(--f-ganz)',ballin:'var(--f-ballin)',adams:'var(--f-adams)',peters:'var(--f-peters)',mayer:'var(--f-mayer)'};
+const FUND=[
+ {q:{de:'»Als ich Brötchen holen will, treffe ich Dan beim Schneeschippen. Er ist gar nicht böse, holt sogar die Brötchen, und wir frühstücken zusammen bei Kerzenlicht wie in alten Zeiten — dem Himmel sei Dank!«',
+     en:'»When I go to fetch bread rolls I find Dan shovelling snow. He is not cross at all — he even fetches the rolls, and we have breakfast together by candlelight like in the old days — thank heavens!«',
+     pl:'»Gdy idę po bułki, spotykam Dana przy odśnieżaniu. Wcale się nie gniewa, sam przynosi bułki i jemy śniadanie razem przy świecach jak za dawnych czasów — dzięki niebiosom!«'},
+  who:{de:'Anneliese Wessling, Tagebuch, 3. Januar 1985',en:'Anneliese Wessling, diary, 3 January 1985',pl:'Anneliese Wessling, dziennik, 3 stycznia 1985'},
+  s:'q-tb85',pi:3},
+ {q:{de:'»Dieser Brief sollte eigentlich ein Vorfrühlingsbrief werden, da das Wetter in den ersten Februarwochen so mild war, dass das Fenster meiner Zelle Tag und Nacht offen stand …«',
+     en:'»This letter was really meant to become a letter of early spring, since the weather in the first weeks of February was so mild that the window of my cell stood open day and night …«',
+     pl:'»Ten list miał właściwie stać się listem przedwiosennym, bo pogoda w pierwszych tygodniach lutego była tak łagodna, że okno mojej celi stało otworem dniem i nocą …«'},
+  who:{de:'Gottfried Ballin an seine Mutter, Zuchthaus Herford, 16. Februar 1938',en:'Gottfried Ballin to his mother, Herford prison, 16 February 1938',pl:'Gottfried Ballin do matki, więzienie Herford, 16 lutego 1938'},
+  s:'q-gb-briefe',pi:43},
+ {q:{de:'»Sagt Beate, dass es nicht so wichtig ist, eine große, bekannte Künstlerin zu werden. Was zählt, ist, aus seinem Leben ein Kunstwerk zu machen.«',
+     en:'»Tell Beate that it is not so important to become a great, famous artist. What counts is to make a work of art of one’s life.«',
+     pl:'»Powiedzcie Beacie, że nie jest tak ważne, by zostać wielką, znaną artystką. Liczy się to, by uczynić ze swojego życia dzieło sztuki.«'},
+  who:{de:'Anna Luise Ballin geb. Ganz, letzter Brief an die Familie, um 1941',en:'Anna Luise Ballin née Ganz, last letter to the family, c. 1941',pl:'Anna Luise Ballin z d. Ganz, ostatni list do rodziny, ok. 1941'},
+  s:'q-lit-ganz',pi:null}];
+function heroPick(){
+  const hs=(window.HEROES||[]); if(!hs.length)return null;
+  const day=Math.floor(Date.now()/86400000);
+  return hs[day%hs.length];
+}
+function heroGo(){
+  const h=heroPick(); if(!h)return;
+  if(h.go[0]==='persons')go('persons',null,h.go[1]); else go(h.go[0],h.go[1]);
+}
+function famCounts(st){
+  const np=PERSONS.filter(p=>p.strand.includes(st)).length;
+  let ns=0;
+  SOURCES.forEach(s=>{for(const id of srcPersonIds(s)){const p=P(id);if(p&&p.strand.includes(st)){ns++;return;}}});
+  return {np,ns};
+}
+function typLabel(s){return t(s.type).split(' ')[0].replace(/[()]/g,'');}
 function vHome(){
   const pages=SOURCES.reduce((n,s)=>n+s.pages.length,0);
-  const recent=[...SOURCES].sort((a,b)=>(b.added||'').localeCompare(a.added||'')).slice(0,6);
-  return `<div class="hero">
-    <div class="welcome"><h2 class="page">${t(UI.welcome)}</h2><p>${t(UI.welcomeText)}</p>
-      <div class="chips" style="margin-top:16px">${chipTags(Object.keys(TAGS))}</div></div>
-    <div><h3 style="font-weight:normal;margin-bottom:10px">${t(UI.strandsTitle)}</h3>
-      <div class="strand-list">${Object.keys(STRANDS).map(st=>{
-        const n=PERSONS.filter(p=>p.strand.includes(st)).length;
-        return `<div class="strand-row" onclick="go('persons',null,'${st}')"><b>${t(STRANDS[st])}</b><span>${n} ${t(UI.inPersons)}</span></div>`;}).join('')}
-      </div></div></div>
-    <div class="stats">
-      <div class="stat" onclick="go('persons')"><b>${PERSONS.length}</b><span>${t(UI.statPersons)}</span></div>
-      <div class="stat" onclick="go('sources')"><b>${SOURCES.length}</b><span>${t(UI.statSources)}</span></div>
-      <div class="stat" onclick="go('sources')"><b>${pages}</b><span>${t(UI.statPagesLbl)}</span></div>
-      <div class="stat" onclick="go('timeline')"><b>${EVENTS.length}</b><span>${t(UI.statEvents)}</span></div>
-      <div class="stat" onclick="go('persons')"><b>${(window.PHOTOS||[]).length}</b><span>${t(UI.statPhotos)}</span></div>
+  const recent=[...SOURCES].sort((a,b)=>(b.added||'').localeCompare(a.added||'')).slice(0,5);
+  const hero=heroPick();
+  const story=(NARRATIVES||[]).find(n=>n.chapters&&n.chapters.length)||null;
+  const fund=FUND[Math.floor(Date.now()/86400000)%FUND.length];
+  const famCards=Object.keys(STRANDS).map(st=>{
+    const c=famCounts(st);const ph=FAMFOTO[st];
+    const name=t(STRANDS[st]).replace(/^(Strang|Line|Linia)\s+/i,'').replace(/\s+(line|Linie)$/i,'');
+    return `<div class="famkarte" style="--fc:${FAMCOLOR[st]||'var(--accent)'}" onclick="go('persons',null,'${st}')">
+      <div class="fk-bild">${ph&&IMGS[ph]?`<img src="${IMGS[ph]}" alt="">`:`<div class="fk-mono">${name.charAt(0)}</div>`}</div>
+      <div class="fk-text"><h3>${name}</h3><div class="zeit">${t(UI.famPlaces[st])||''}</div>
+      <p>${t(UI.famProfile[st])||''}</p>
+      <div class="fk-fakten"><b>${c.np}</b> ${t(UI.statPersons)} · <b>${c.ns}</b> ${t(UI.statSources)}</div></div></div>`;
+  }).join('');
+  return `
+  <section class="hx-hero">
+    <div>
+      <div class="vorspann">${t(UI.heroKicker)}</div>
+      <h1>${t(UI.heroTitle)}</h1>
+      <p class="intro">${t(UI.welcomeText)}</p>
+      <div class="hx-cta">
+        <button class="btn big" onclick="go('sources')">${t(UI.btnBrowse)}</button>
+        <button class="btn big sec" onclick="go('strands')">${t(UI.btnStories)}</button>
+      </div>
     </div>
-    <h3 style="font-weight:normal;margin-bottom:2px">${t(UI.recent)}</h3>
-    <div class="page-sub" style="margin-bottom:12px">${t(UI.recentSub)}</div>
-    <div class="grid cols3">${recent.map(cardSource).join('')}</div>`;
+    ${hero?`<figure class="heldenbild">
+      <div class="rahmen" onclick="heroGo()"><img src="${IMGS[hero.img]}" alt=""></div>
+      <figcaption>${t(hero.cap)}</figcaption>
+    </figure>`:''}
+  </section>
+  <section class="suchband">
+    <div class="feld"><span style="color:var(--accent);font-size:18px">&#128269;</span>
+      <input id="bigSearch" placeholder="${t(UI.bigSearchPh)}" list="searchSugg" onkeydown="if(event.key==='Enter'&&this.value.trim()){HLQ='';go('search',this.value.trim());}">
+    </div>
+    <div class="hinweis">${t(UI.bigSearchHint)}</div>
+  </section>
+  ${story?`<section>
+    <div class="sek-kopf"><h2>${t(UI.featStory)}</h2><a onclick="go('strands')">${t(UI.allStories)} →</a></div>
+    <article class="storyx">
+      <div class="text">
+        <div class="kicker">${t(UI.nav.strands)} · ${story.strand&&STRANDS[story.strand]?t(STRANDS[story.strand]):''}</div>
+        <h3>${t(story.title)}</h3>
+        <p class="tz">${t(story.teaser)}</p>
+        <div class="smeta">
+          <span><b>${story.period||''}</b></span>
+          <span><b>${story.chapters.length}</b> ${t(UI.chapters)} · ca. ${story.readmin||15} ${t(UI.readMin)}</span>
+          <span><b>${(story.sources||[]).length}</b> ${t(UI.statSources)}</span>
+        </div>
+        <div class="hx-cta" style="margin-top:8px"><button class="btn big" onclick="go('geschichte','${story.id}')">${t(UI.readStory)}</button></div>
+      </div>
+      ${story.cover&&IMGS[story.cover]?`<figure class="bild"><img src="${IMGS[story.cover]}" alt=""><figcaption>${(()=>{const h=(window.HEROES||[]).find(x=>x.img==='hero-irene');return h?t(h.cap):'';})()}</figcaption></figure>`:''}
+    </article>
+  </section>`:''}
+  <section>
+    <div class="sek-kopf"><h2>${t(UI.famDiscover)}</h2><a onclick="go('persons')">${t(UI.allPersons)} →</a></div>
+    <div class="fam-gitter">${famCards}</div>
+  </section>
+  <section class="hx-zwei">
+    <div class="fund">
+      <div class="kicker">${t(UI.fundKicker)}</div>
+      <blockquote>${t(fund.q)}</blockquote>
+      <div class="quelle">${t(fund.who)}${fund.pi!==null?` · <a onclick="go('source','${fund.s}','read:${fund.pi}')">${t(UI.toPassage)} →</a>`:` · <a onclick="go('source','${fund.s}')">${t(UI.toPassage)} →</a>`}</div>
+    </div>
+    <div class="panelx">
+      <h3>${t(UI.recent)}</h3>
+      <ul class="neuliste">${recent.map(s=>`<li onclick="go('source','${s.id}')"><span class="typ">${typLabel(s)}</span> ${t(s.title)} <span class="datum">${fmtAdded(s.added)}</span></li>`).join('')}</ul>
+    </div>
+  </section>
+  <section class="hx-fuss">
+    <div class="panelx">
+      <h3>${t(UI.whereStart)}</h3>
+      <div class="wege">
+        <a class="weg" onclick="go('geschichte','gottfried-helene')"><b>${t(UI.wayStory)}</b>Gottfried und Helene</a>
+        <a class="weg" onclick="const el=document.getElementById('bigSearch');if(el){el.focus();window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-140,behavior:'smooth'});}"><b>${t(UI.wayPerson)}</b>${t(UI.wayPersonSub)}</a>
+        <a class="weg" onclick="go('tree')"><b>${t(UI.wayTree)}</b>${t(UI.wayTreeSub)}</a>
+        <a class="weg" onclick="go('fragen')"><b>${t(UI.wayAsk)}</b>${t(UI.wayAskSub)}</a>
+      </div>
+    </div>
+    <div>
+      <div class="kennzahlen">
+        <span onclick="go('persons')"><b>${PERSONS.length}</b>${t(UI.statPersons)}</span>
+        <span onclick="go('sources')"><b>${SOURCES.length}</b>${t(UI.statSources)}</span>
+        <span onclick="go('sources')"><b>${pages}</b>${t(UI.statPagesLbl)}</span>
+        <span onclick="go('persons')"><b>${(window.PHOTOS||[]).length}</b>${t(UI.statPhotos)}</span>
+        <span onclick="go('timeline')"><b>${EVENTS.length}</b>${t(UI.statEvents)}</span>
+      </div>
+      <div style="font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);padding:0 4px">${t(UI.trilingualNote)}</div>
+    </div>
+  </section>`;
 }
 function fmtAdded(a){if(!a)return'';const p=a.split('-');return p[2].replace(/^0/,'')+'.'+p[1].replace(/^0/,'')+'.'+p[0];}
 function isNewest(s){const mx=SOURCES.reduce((m,x)=>(x.added||'')>m?x.added:m,'');return s.added===mx;}
@@ -821,10 +1073,47 @@ function vTree(focus){
 }
 function vStrands(){
   return `<h2 class="page">${t(UI.nav.strands)}</h2><div class="page-sub">${t(UI.strandsSub)}</div>
-  <div class="grid cols2">${NARRATIVES.map(n=>`<div class="card"><h3>${t(n.title)}</h3>
-    <p style="font-size:14.5px;color:var(--ink-soft);margin:8px 0">${t(n.teaser)}</p>
-    <div class="meta">${t(UI.sourcesCited)}: ${n.sources.map(sid=>`<a onclick="go('source','${sid}')">${S(sid).sig}</a>`).join(' · ')}</div>
-    <div style="margin-top:10px"><button class="btn" onclick="openModal()">${t(UI.readStrand)} →</button></div></div>`).join('')}</div>`;
+  <div class="st-gitter">${NARRATIVES.map(n=>{
+    const has=n.chapters&&n.chapters.length;
+    return `<div class="stkarte" onclick="${has?`go('geschichte','${n.id}')`:'void(0)'}" ${has?'':'style="cursor:default;opacity:.85"'}>
+    ${n.cover&&IMGS[n.cover]?`<div class="cover"><img src="${IMGS[n.cover]}" alt=""></div>`:''}
+    <div class="stx">${n.strand&&STRANDS[n.strand]?`<div class="kicker" style="margin-bottom:4px">${t(STRANDS[n.strand])}</div>`:''}
+    <h3>${t(n.title)}</h3>
+    <p>${t(n.teaser)}</p>
+    <div class="meta" style="margin-top:10px">${has?`${n.period||''} · ${n.chapters.length} ${t(UI.chapters)} · ca. ${n.readmin||15} ${t(UI.readMin)}`:t(UI.storySoon)}</div>
+    <div class="meta" style="margin-top:6px">${t(UI.sourcesCited)}: ${(n.sources||[]).map(sid=>S(sid)?`<a onclick="event.stopPropagation();go('source','${sid}')">${S(sid).sig}</a>`:'').filter(Boolean).join(' · ')}</div>
+    ${has?`<div style="margin-top:12px"><button class="btn" onclick="go('geschichte','${n.id}')">${t(UI.readStory)} →</button></div>`:''}
+    </div></div>`;}).join('')}</div>`;
+}
+function vStory(id,extra){
+  const n=NARRATIVES.find(x=>x.id===id);
+  if(!n||!n.chapters||!n.chapters.length)return vStrands();
+  const ci=Math.max(0,Math.min(parseInt(extra||'0',10)||0,n.chapters.length-1));
+  const ch=n.chapters[ci];
+  const html=(ch.html&&(ch.html[LANG]||ch.html.de))||'';
+  const fallback=LANG!=='de'&&!(ch.html&&ch.html[LANG]);
+  const pct=Math.round(((ci+1)/n.chapters.length)*100);
+  return `<a class="backlink" onclick="go('strands')">← ${t(UI.nav.strands)}</a>
+  <div class="kicker">${n.strand&&STRANDS[n.strand]?t(STRANDS[n.strand]):''} · ${n.period||''}</div>
+  <h2 class="page" style="margin-top:4px">${t(n.title)}</h2>
+  <div class="kap-nav">
+    <button class="propose" ${ci===0?'disabled style="opacity:.35"':''} onclick="go('geschichte','${id}','${ci-1}')">← </button>
+    <select class="ein" style="width:auto;max-width:70%" onchange="go('geschichte','${id}',this.value)">
+      ${n.chapters.map((c,i)=>`<option value="${i}" ${i===ci?'selected':''}>${i+1}. ${t(c.title)}</option>`).join('')}
+    </select>
+    <span class="meta" style="margin:0">${t(UI.chapterOf)} ${ci+1} / ${n.chapters.length}</span>
+    <button class="propose" ${ci===n.chapters.length-1?'disabled style="opacity:.35"':''} onclick="go('geschichte','${id}','${ci+1}')"> →</button>
+  </div>
+  <div class="kap-bar"><i style="width:${pct}%"></i></div>
+  <h3 class="kap-titel">${ci+1}. ${t(ch.title)}</h3>
+  ${fallback?`<div class="note" style="margin-bottom:16px">${t(UI.onlyDe)}</div>`:''}
+  <div class="kapitel prose">${html}</div>
+  <div class="kap-nav" style="margin-top:34px">
+    ${ci>0?`<button class="btn ghost" onclick="go('geschichte','${id}','${ci-1}')">← ${ci}. ${t(n.chapters[ci-1].title)}</button>`:'<span></span>'}
+    ${ci<n.chapters.length-1?`<button class="btn" onclick="go('geschichte','${id}','${ci+1}')">${ci+2}. ${t(n.chapters[ci+1].title)} →</button>`:''}
+  </div>
+  <hr class="rule"><div class="meta">${t(UI.sourcesCited)}:</div>
+  <div class="chips" style="margin-top:6px">${(n.sources||[]).map(sid=>S(sid)?`<span class="chip" onclick="go('source','${sid}')">${S(sid).sig} · ${t(S(sid).title)}</span>`:'').filter(Boolean).join('')}</div>`;
 }
 function vTag(tg){
   const srcs=SOURCES.filter(s=>s.tags.includes(tg));
@@ -1217,10 +1506,19 @@ function render(){
     <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5);margin-left:auto" onclick="adminToggle()">✕</button></div>`:'';
   document.getElementById('langSwitch').innerHTML=['de','en','pl'].map(l=>
     `<button class="${LANG===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('');
-  const navMap=['home','persons','sources','timeline','tree','strands','fragen','mappe'];
-  const active=['person'].includes(VIEW.name)?'persons':['source','tag'].includes(VIEW.name)?'sources':VIEW.name;
-  document.getElementById('mainNav').innerHTML=navMap.map(k=>
-    `<button class="${active===k?'active':''}" onclick="go('${k}')">${t(UI.nav[k])}${k==='mappe'&&MAPPE.length?` (${MAPPE.length})`:''}</button>`).join('');
+  const active=['person','persons'].includes(VIEW.name)?'archiv'
+    :['source','sources','tag','search','fragen'].includes(VIEW.name)?'archiv'
+    :VIEW.name==='geschichte'?'strands':VIEW.name;
+  const navBtn=(k,view)=>`<button class="${active===k?'active':''}" onclick="go('${view||k}')">${t(UI.nav[k])}${k==='mappe'&&MAPPE.length?` (${MAPPE.length})`:''}</button>`;
+  document.getElementById('mainNav').innerHTML=
+    navBtn('home')+
+    `<span class="navdrop"><button class="${active==='archiv'?'active':''}">${t(UI.nav.archiv)} <span style="font-size:10px">▾</span></button>
+      <span class="dmenu">
+        <button onclick="go('persons')">${t(UI.nav.persons)}</button>
+        <button onclick="go('sources')">${t(UI.nav.sources)}</button>
+        <button onclick="go('fragen')">${t(UI.nav.fragen)}</button>
+      </span></span>`+
+    navBtn('strands')+navBtn('timeline')+navBtn('tree')+navBtn('mappe');
   const v=VIEW;
   const app=document.getElementById('app');
   app.innerHTML= v.name==='home'?vHome()
@@ -1231,6 +1529,7 @@ function render(){
     : v.name==='timeline'?vTimeline()
     : v.name==='tree'?vTree(v.id)
     : v.name==='strands'?vStrands()
+    : v.name==='geschichte'?vStory(v.id,v.extra)
     : v.name==='tag'?vTag(v.id)
     : v.name==='search'?vSearch(v.id)
     : v.name==='fragen'?vAsk()
