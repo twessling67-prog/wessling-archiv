@@ -295,6 +295,41 @@
     .storyx .bild{min-height:200px}
   }
   @media(max-width:560px){.fam-gitter{grid-template-columns:1fr}}
+  /* ---------- Redesign 2026: Personen ---------- */
+  .pk{display:flex;gap:14px;align-items:flex-start}
+  .pk .pbild{width:64px;height:64px;flex:none;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .pk .pbild img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+  .mono{display:flex;align-items:center;justify-content:center;width:100%;height:100%;
+    font-family:var(--serif);font-size:22px;color:#fff;background:var(--mc,var(--accent));opacity:.85}
+  .pk h3{font-size:17.5px;margin-bottom:2px}
+  .plist{display:flex;flex-direction:column;gap:0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .prow{display:flex;gap:14px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--line);cursor:pointer;font-family:var(--sans);font-size:14px}
+  .prow:last-child{border-bottom:none}
+  .prow:hover{background:var(--paper-deep)}
+  .prow .pbild{width:34px;height:34px;flex:none;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .prow .pbild img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+  .prow .mono{font-size:14px}
+  .prow .pdat{color:var(--ink-faint);font-size:12.5px;margin-left:auto;white-space:nowrap}
+  .viewtoggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-family:var(--sans);font-size:12.5px}
+  .viewtoggle button{border:none;background:var(--card);padding:6px 13px;cursor:pointer;color:var(--ink-soft)}
+  .viewtoggle button.active{background:var(--accent);color:#f6ecdd}
+  .lnav{position:sticky;top:0;z-index:40;display:flex;gap:2px;flex-wrap:wrap;background:var(--paper);
+    border-bottom:1px solid var(--line);padding:6px 0;margin:14px 0 22px;font-family:var(--sans)}
+  .lnav a{font-size:13px;color:var(--ink-soft);padding:6px 12px;border-radius:6px;text-decoration:none}
+  .lnav a:hover{background:var(--paper-deep);color:var(--accent);text-decoration:none}
+  .phead{display:grid;grid-template-columns:150px 1fr auto;gap:24px;align-items:start}
+  .phead .pportrait{width:150px;border-radius:8px;border:1px solid var(--line);overflow:hidden;cursor:pointer;aspect-ratio:4/5}
+  .phead .pportrait img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}
+  .phead h2{font-family:var(--serif);font-weight:normal;font-size:34px;line-height:1.1;margin-bottom:4px}
+  .phead .pdates{font-family:var(--sans);font-size:14px;color:var(--ink-soft);margin-bottom:8px}
+  .phead .pfam{font-family:var(--sans);font-size:13px;color:var(--ink-soft);line-height:1.7}
+  .phead .pfam .lbl{color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin-right:5px}
+  .privnote{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);font-style:italic}
+  .mentcard{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:10px}
+  .mentcard .mhead{font-family:var(--sans);font-size:12px;color:var(--ink-faint);margin-bottom:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+  .mentcard .mlink{margin-left:auto;font-size:12.5px;white-space:nowrap}
+  @media(max-width:760px){.phead{grid-template-columns:96px 1fr}.phead .pportrait{width:96px}.phead>div:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -494,6 +529,19 @@ const UI={
   stIdent:{de:'identifiziert',en:'identified',pl:'zidentyfikowana'},
   stOpen:{de:'nicht identifiziert',en:'not yet identified',pl:'niezidentyfikowana'},
   stLiving:{de:'lebend? · Datenschutz',en:'living? · privacy',pl:'żyje? · ochrona danych'},
+  privShort:{de:'🔒 Datenschutz',en:'🔒 privacy',pl:'🔒 ochrona danych'},
+  privLong:{de:'Daten aus Datenschutzgründen eingeschränkt.',en:'Details restricted for privacy reasons.',pl:'Dane ograniczone ze względu na ochronę prywatności.'},
+  viewCards:{de:'Karten',en:'Cards',pl:'Karty'},
+  viewList:{de:'Liste',en:'List',pl:'Lista'},
+  sortAZ:{de:'A–Z',en:'A–Z',pl:'A–Z'},
+  sortBorn:{de:'Geburtsjahr',en:'Year of birth',pl:'Rok urodzenia'},
+  lnavOverview:{de:'Überblick',en:'Overview',pl:'Przegląd'},
+  lnavBio:{de:'Biografie',en:'Biography',pl:'Biografia'},
+  lnavSources:{de:'Quellen & Erwähnungen',en:'Sources & mentions',pl:'Źródła i wzmianki'},
+  lnavPhotos:{de:'Fotos',en:'Photos',pl:'Zdjęcia'},
+  lnavFamily:{de:'Familie',en:'Family',pl:'Rodzina'},
+  toPassage2:{de:'Zur Textstelle →',en:'Go to passage →',pl:'Do fragmentu →'},
+  srcCount:{de:'Quellen',en:'sources',pl:'źródeł'},
   fam:{parents:{de:'Eltern',en:'Parents',pl:'Rodzice'},spouses:{de:'Partner / Ehen',en:'Partners / marriages',pl:'Partnerzy / małżeństwa'},children:{de:'Kinder',en:'Children',pl:'Dzieci'},siblings:{de:'Geschwister',en:'Siblings',pl:'Rodzeństwo'}},
   famBox:{de:'Familie — aus dem Stammbaum',en:'Family — from the tree',pl:'Rodzina — z drzewa'},
   gedAutoBio:{de:'Dieser Eintrag stammt aus dem Familienstammbaum [Q-GED-01]. Ein ausführlicher Artikel entsteht, sobald Quellen zu dieser Person erfasst und ausgewertet sind.',en:'This entry comes from the family tree [Q-GED-01]. A full article will grow once sources concerning this person have been processed.',pl:'Ten wpis pochodzi z drzewa genealogicznego [Q-GED-01]. Pełny artykuł powstanie, gdy zostaną opracowane źródła dotyczące tej osoby.'},
@@ -593,12 +641,38 @@ function renderTranscript(dipl){
 }
 function mentionsOf(pid){
   const out=[];
-  SOURCES.forEach(s=>s.pages.forEach(pg=>{
+  SOURCES.forEach(s=>s.pages.forEach((pg,pi)=>{
     if(pg.dipl.includes(`data-p="${pid}"`)){
-      const sent=t(pg.read).split(/(?<=[.!?])\s+/).find(x=>true);
-      out.push({src:s,page:pg.n,label:pg.label,snippet:t(pg.read).slice(0,140)+'…'});
+      out.push({src:s,page:pg.n,pi,label:pg.label,snippet:t(pg.read).slice(0,140)+'…'});
     }
   }));
+  return out;
+}
+let MCOUNT=null;
+function mentionCount(pid){
+  if(!MCOUNT){
+    MCOUNT={};
+    SOURCES.forEach(s=>s.pages.forEach(pg=>{
+      const seen=new Set();let m;const re=/data-p="([^"]+)"/g;
+      while((m=re.exec(pg.dipl)))seen.add(m[1]);
+      seen.forEach(id=>{MCOUNT[id]=(MCOUNT[id]||0)+1;});
+    }));
+    SOURCES.forEach(s=>{[s.author,s.addressee].forEach(id=>{if(id)MCOUNT[id]=(MCOUNT[id]||0)+1;});});
+  }
+  return MCOUNT[pid]||0;
+}
+function monoHtml(p){
+  const init=(p.name||'?').split(/\s+/).filter(w=>/^[A-ZÄÖÜŁŚŻ]/.test(w)).slice(0,2).map(w=>w[0]).join('')||'?';
+  const c=FAMCOLOR[(p.strand&&p.strand[0])]||'var(--accent)';
+  return `<div class="mono" style="--mc:${c}">${init}</div>`;
+}
+function pThumb(p,cls){
+  return `<div class="pbild">${(p.img&&IMGS[p.img])?`<img src="${IMGS[p.img]}" alt="">`:monoHtml(p)}</div>`;
+}
+function pBadges(p){
+  let out='';
+  if(ADMIN)out+=` <span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>`;
+  if(p.living)out+=` <span class="badge rough" title="${t(UI.privLong)}">${t(ADMIN?UI.stLiving:UI.privShort)}</span>`;
   return out;
 }
 function chipTags(tags){return tags.map(tg=>`<span class="chip" onclick="go('tag','${tg}')">${t(TAGS[tg])}</span>`).join('');}
@@ -741,49 +815,93 @@ function cardSource(s){
     ${s.added?`<div class="meta" style="margin-top:8px">${t(UI.addedOn)} ${fmtAdded(s.added)} · ${s.pages.length} ${t(UI.statPagesLbl)}</div>`:''}</div>`;
 }
 function cardPerson(p){
-  const dates=(p.born!=='?'?`${t(UI.born)} ${p.born}`:'')+(p.died&&p.died!=='?'?` · ${t(UI.died)} ${p.died}`:'');
-  return `<div class="card"><div class="meta" style="display:flex;align-items:center;gap:6px">${dates||'—'} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}
+  const dates=(p.born!=='?'&&p.born?`${t(UI.born)} ${p.born}`:'')+(p.died&&p.died!=='?'?` · ${t(UI.died)} ${p.died}`:'');
+  const mc=mentionCount(p.id);
+  return `<div class="card"><div class="pk">
+    ${pThumb(p)}
+    <div style="flex:1;min-width:0">
+    <div class="meta" style="display:flex;align-items:center;gap:6px;margin-bottom:2px">${dates||'—'}${pBadges(p)}
     ${ADMIN?`<button class="propose" style="margin-left:auto" title="${t(UI.adminEdit)}" onclick="event.stopPropagation();editPerson('${p.id}')">🛠</button>`:''}</div>
     <h3><a onclick="go('person','${p.id}')">${p.name}</a></h3>
-    <div class="meta">${p.nameForms}</div>
-    <div class="chips">${chipStrands(p.strand)}${p.circle==='freunde'?`<span class="chip strand" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</span>`:''}</div></div>`;
+    <div class="meta">${p.nameForms||''}${mc?`${p.nameForms?' · ':''}${mc} ${t(UI.srcCount)}`:''}</div>
+    <div class="chips">${chipStrands(p.strand)}${p.circle==='freunde'?`<span class="chip strand" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</span>`:''}</div>
+    </div></div></div>`;
 }
+let PV={mode:'cards',sort:'az'};
+function setPV(k,v){PV[k]=v;render();}
+function bornYear(p){const m=String(p.born||'').match(/(1[5-9]\d\d|20\d\d)/);return m?parseInt(m[1],10):9999;}
 function vPersons(filter){
-  const list=filter==='freunde'?PERSONS.filter(p=>p.circle==='freunde')
+  let list=filter==='freunde'?PERSONS.filter(p=>p.circle==='freunde')
     :filter?PERSONS.filter(p=>p.strand.includes(filter)):PERSONS;
+  list=[...list].sort(PV.sort==='born'?(a,b)=>bornYear(a)-bornYear(b):(a,b)=>a.name.localeCompare(b.name,'de'));
+  const rows=list.map(p=>{
+    const dates=(p.born&&p.born!=='?'?'*'+p.born:'')+(p.died&&p.died!=='?'?' · †'+p.died:'');
+    return `<div class="prow" onclick="go('person','${p.id}')">
+      ${pThumb(p)}
+      <span><b>${p.name}</b>${pBadges(p)}</span>
+      ${ADMIN?`<button class="propose" title="${t(UI.adminEdit)}" onclick="event.stopPropagation();editPerson('${p.id}')">🛠</button>`:''}
+      <span class="pdat">${dates||'—'}</span></div>`;}).join('');
   return `<h2 class="page">${t(UI.nav.persons)}</h2><div class="page-sub">${t(UI.personsSub)} (${list.length})</div>
-    <div class="filterbar"><button class="${!filter?'active':''}" onclick="go('persons')">${t(UI.all)}</button>
-    ${Object.keys(STRANDS).map(st=>`<button class="${filter===st?'active':''}" onclick="go('persons',null,'${st}')">${t(STRANDS[st])}</button>`).join('')}
-    <button class="${filter==='freunde'?'active':''}" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</button></div>
-    <div class="grid cols3">${list.map(cardPerson).join('')}</div>`;
+    <div class="filterbar" style="align-items:center"><button class="${!filter?'active':''}" onclick="go('persons')">${t(UI.all)}</button>
+    ${Object.keys(STRANDS).map(st=>`<button class="${filter===st?'active':''}" style="${filter===st?`background:${FAMCOLOR[st]};border-color:${FAMCOLOR[st]}`:''}" onclick="go('persons',null,'${st}')">${t(STRANDS[st])}</button>`).join('')}
+    <button class="${filter==='freunde'?'active':''}" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</button>
+    <span style="flex:1"></span>
+    <div class="viewtoggle"><button class="${PV.mode==='cards'?'active':''}" onclick="setPV('mode','cards')">▦ ${t(UI.viewCards)}</button><button class="${PV.mode==='list'?'active':''}" onclick="setPV('mode','list')">☰ ${t(UI.viewList)}</button></div>
+    <div class="viewtoggle"><button class="${PV.sort==='az'?'active':''}" onclick="setPV('sort','az')">${t(UI.sortAZ)}</button><button class="${PV.sort==='born'?'active':''}" onclick="setPV('sort','born')">${t(UI.sortBorn)}</button></div>
+    </div>
+    ${PV.mode==='list'?`<div class="plist">${rows}</div>`:`<div class="grid cols3">${list.map(cardPerson).join('')}</div>`}`;
 }
 function vPerson(id){
   const p=P(id); if(!p) return '<p class="empty">?</p>';
   const men=mentionsOf(id);
+  const r=window.RELX&&RELX[id];
+  const famLine=(lbl,ids)=>ids&&ids.length?`<div><span class="lbl">${lbl}</span>${ids.map(i=>P(i)?`<a onclick="go('person','${i}')">${P(i).name}</a>`:'').filter(Boolean).join(' · ')}</div>`:'';
+  const dates=[(p.born&&p.born!=='?'?'* '+p.born+(p.bornp?', '+p.bornp:''):''),(p.died&&p.died!=='?'?'† '+p.died+(p.diedp?', '+p.diedp:''):'')].filter(Boolean).join(' &nbsp;·&nbsp; ');
+  const hasPhotos=(window.PHOTOS||[]).some(ph=>ph.persons.includes(p.id));
   return `<a class="backlink" onclick="go('persons')">← ${t(UI.nav.persons)}</a>
-  <div class="detail-head"><div><h2 class="page">${p.name}</h2>
-    <div class="page-sub">${p.nameForms} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}</div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+  <div class="phead">
+    <div class="pportrait" ${p.img&&IMGS[p.img]?`onclick="openPhoto('${p.img}')"`:''}>${(p.img&&IMGS[p.img])?`<img src="${IMGS[p.img]}">`:monoHtml(p)}</div>
+    <div>
+      <div class="kicker">${(p.strand||[]).map(st=>STRANDS[st]?t(STRANDS[st]):'').filter(Boolean).join(' · ')||(p.circle==='freunde'?t(UI.circleFriends):'')}</div>
+      <h2>${p.name}</h2>
+      <div class="pdates">${dates||'—'}${p.nameForms?` &nbsp;·&nbsp; ${p.nameForms}`:''}${pBadges(p)}</div>
+      ${p.living&&!ADMIN?`<div class="privnote">${t(UI.privLong)}</div>`:''}
+      <div class="pfam">
+        ${r?famLine(t(UI.fam.parents),r.par)+famLine(t(UI.fam.spouses),r.spo)+famLine(t(UI.fam.children),r.chi):''}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
       <button class="propose" onclick="mappeAdd('person','${p.id}')">🗂 ${t(UI.mappeAdd)}</button>
       ${ADMIN?`<button class="btn" onclick="editPerson('${p.id}')">🛠 ${t(UI.adminEdit)}</button>`:''}
-      <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button></div></div>
+      <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button>
+    </div>
+  </div>
+  <div class="lnav">
+    <a onclick="document.getElementById('sec-ueb').scrollIntoView({behavior:'smooth',block:'start'})">${t(UI.lnavOverview)}</a>
+    <a onclick="document.getElementById('sec-bio').scrollIntoView({behavior:'smooth',block:'start'})">${t(UI.lnavBio)}</a>
+    <a onclick="document.getElementById('sec-quellen').scrollIntoView({behavior:'smooth',block:'start'})">${t(UI.lnavSources)} (${men.length})</a>
+    ${hasPhotos?`<a onclick="document.getElementById('sec-fotos').scrollIntoView({behavior:'smooth',block:'start'})">${t(UI.lnavPhotos)}</a>`:''}
+    <a onclick="document.getElementById('sec-fam').scrollIntoView({behavior:'smooth',block:'start'})">${t(UI.lnavFamily)}</a>
+  </div>
   <div class="person-layout"><div>
-    <h3 style="font-weight:normal;margin-bottom:8px">${t(UI.article)}</h3>
-    <div class="prose">${t(p.bio)||`<p><i>${t(UI.gedAutoBio).replace('[Q-GED-01]','<a class="cite" onclick="go(&quot;source&quot;,&quot;q-ged&quot;)">[Q-GED-01]</a>')}</i></p>`}</div><hr class="rule">
-    <h3 style="font-weight:normal;margin-bottom:10px">${t(UI.mentions)}</h3>
-    ${men.length?`<ul class="mention-list">${men.map(m=>`<li><a onclick="go('source','${m.src.id}')">${t(m.src.title)}</a> — ${m.label||t(UI.page)+' '+m.page}<br><span class="snippet">„${m.snippet}"</span></li>`).join('')}</ul>`:`<p class="empty">—</p>`}
-    ${(window.PHOTOS||[]).some(ph=>ph.persons.includes(p.id))?`<hr class="rule"><h3 style="font-weight:normal;margin-bottom:10px">${t(UI.photos)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">${PHOTOS.filter(ph=>ph.persons.includes(p.id)).map(ph=>`<figure style="margin:0;cursor:pointer" onclick="openPhoto('${ph.k}')"><img src="${IMGS[ph.k]}" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;border:1px solid var(--line)"><figcaption class="meta" style="margin-top:3px">${ph.cap}</figcaption></figure>`).join('')}</div>`:''}
+    <div id="sec-bio"><h3 style="font-weight:normal;margin-bottom:8px">${t(UI.lnavBio)}</h3>
+    <div class="prose" style="font-size:16.5px;line-height:1.7">${t(p.bio)||`<p><i>${t(UI.gedAutoBio).replace('[Q-GED-01]','<a class="cite" onclick="go(&quot;source&quot;,&quot;q-ged&quot;)">[Q-GED-01]</a>')}</i></p>`}</div></div><hr class="rule">
+    <div id="sec-quellen"><h3 style="font-weight:normal;margin-bottom:10px">${t(UI.mentions)}</h3>
+    ${men.length?men.map(m=>`<div class="mentcard"><div class="mhead">
+        <span class="badge type">${t(m.src.type)}</span><b>${m.label||t(UI.page)+' '+m.page}</b><span>${t(m.src.title)}</span>
+        <a class="mlink" onclick="go('source','${m.src.id}','dipl:${m.pi}')">${t(UI.toPassage2)}</a></div>
+      <span class="snippet">„${m.snippet}"</span></div>`).join(''):`<p class="empty">—</p>`}</div>
+    ${hasPhotos?`<hr class="rule"><div id="sec-fotos"><h3 style="font-weight:normal;margin-bottom:10px">${t(UI.photos)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">${PHOTOS.filter(ph=>ph.persons.includes(p.id)).map(ph=>`<figure style="margin:0;cursor:pointer" onclick="openPhoto('${ph.k}')"><img src="${IMGS[ph.k]}" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;border:1px solid var(--line)"><figcaption class="meta" style="margin-top:3px">${ph.cap}</figcaption></figure>`).join('')}</div></div>`:''}
   </div><aside>
-    ${(p.img&&typeof IMGS!=='undefined'&&IMGS[p.img])?`<img src="${IMGS[p.img]}" style="width:100%;border-radius:4px;border:1px solid var(--line);margin-bottom:12px;cursor:pointer" onclick="openPhoto('${p.img}')">`:`<div class="portrait">${t(UI.portraitPh)}</div>`}
-    <div class="factbox"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.1em">${t(UI.factsTitle)}</b><dl>
-      <dt>${t(UI.fNames)}</dt><dd>${p.nameForms}</dd>
-      <dt>${t(UI.fDates)}</dt><dd>${t(UI.born)} ${p.born} · ${t(UI.died)} ${p.died}</dd>
-      <dt>${t(UI.fStrand)}</dt><dd><div class="chips">${chipStrands(p.strand)}</div></dd>
+    <div class="factbox" id="sec-ueb"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.1em">${t(UI.factsTitle)}</b><dl>
+      ${p.nameForms?`<dt>${t(UI.fNames)}</dt><dd>${p.nameForms}</dd>`:''}
+      <dt>${t(UI.fDates)}</dt><dd>${t(UI.born)} ${p.born||'?'} · ${t(UI.died)} ${p.died||'—'}</dd>
+      ${(p.strand||[]).length?`<dt>${t(UI.fStrand)}</dt><dd><div class="chips">${chipStrands(p.strand)}</div></dd>`:''}
       ${(()=>{const k=kinToAnchor(p.id);if(!k)return'';
         return `<dt>${t(UI.fKin)}</dt><dd>${k.married?t(UI.kinMarried)+': ':''}${k.term} ${t(UI.kinOf)} <a onclick="go('person','${k.aid}')">${P(k.aid).name}</a>${k.via&&P(k.via)?` <span style="color:var(--ink-faint)">(∞ ${P(k.via).name})</span>`:''}</dd>`;})()}
-      ${p.rel.length?`<dt>${t(UI.fRel)}</dt><dd>${p.rel.map(r=>P(r[0])?`<a onclick="go('person','${r[0]}')">${P(r[0]).name}</a> <span style="color:var(--ink-faint)">${r[1]}</span>`:'').join('<br>')}</dd>`:''}
+      ${p.rel.length?`<dt>${t(UI.fRel)}</dt><dd>${p.rel.map(r2=>P(r2[0])?`<a onclick="go('person','${r2[0]}')">${P(r2[0]).name}</a> <span style="color:var(--ink-faint)">${r2[1]}</span>`:'').join('<br>')}</dd>`:''}
     </dl></div>
-    ${famBoxHtml(p.id)}</aside></div>`;
+    <div id="sec-fam">${famBoxHtml(p.id)}</div></aside></div>`;
 }
 const KIN_ANCHORS=['anneliese-wessling','thomas','brigitte','irene','i282651973914','i282652294733'];
 function ancSet(id){
