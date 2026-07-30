@@ -395,6 +395,9 @@ const UI={
     en:'Individually compiled documents and articles — reorder with the arrows, then save as PDF.',
     pl:'Indywidualnie zestawione dokumenty i artykuły — zmień kolejność strzałkami, potem zapisz jako PDF.'},
   adminActive:{de:'Admin-Modus aktiv',en:'Admin mode active',pl:'Tryb administratora aktywny'},
+  adminHow:{de:'Bearbeiten: In Personen-Listen auf 🛠 klicken, auf Personen- und Quellenseiten auf „🛠 Bearbeiten". Danach unbedingt „Daten exportieren" — sonst gehen die Änderungen beim Schließen verloren.',
+    en:'To edit: click 🛠 on person cards, or “🛠 Edit” on person and source pages. Afterwards use “Export data” — otherwise changes are lost when you close the page.',
+    pl:'Edycja: kliknij 🛠 na kartach osób lub „🛠 Edytuj” na stronach osób i źródeł. Potem koniecznie „Eksport danych” — inaczej zmiany przepadną po zamknięciu.'},
   adminPrompt:{de:'Admin-Passwort:',en:'Admin password:',pl:'Hasło administratora:'},
   adminWrong:{de:'Falsches Passwort.',en:'Wrong password.',pl:'Błędne hasło.'},
   adminEdit:{de:'Bearbeiten',en:'Edit',pl:'Edytuj'},
@@ -733,7 +736,8 @@ function cardSource(s){
 }
 function cardPerson(p){
   const dates=(p.born!=='?'?`${t(UI.born)} ${p.born}`:'')+(p.died&&p.died!=='?'?` · ${t(UI.died)} ${p.died}`:'');
-  return `<div class="card"><div class="meta">${dates||'—'} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}</div>
+  return `<div class="card"><div class="meta" style="display:flex;align-items:center;gap:6px">${dates||'—'} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}
+    ${ADMIN?`<button class="propose" style="margin-left:auto" title="${t(UI.adminEdit)}" onclick="event.stopPropagation();editPerson('${p.id}')">🛠</button>`:''}</div>
     <h3><a onclick="go('person','${p.id}')">${p.name}</a></h3>
     <div class="meta">${p.nameForms}</div>
     <div class="chips">${chipStrands(p.strand)}${p.circle==='freunde'?`<span class="chip strand" onclick="go('persons',null,'freunde')">☕ ${t(UI.circleFriends)}</span>`:''}</div></div>`;
@@ -755,7 +759,7 @@ function vPerson(id){
     <div class="page-sub">${p.nameForms} &nbsp;<span class="badge ${p.status==='ident'?'ok':'open'}">${t(p.status==='ident'?UI.stIdent:UI.stOpen)}</span>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="propose" onclick="mappeAdd('person','${p.id}')">🗂 ${t(UI.mappeAdd)}</button>
-      ${ADMIN?`<button class="propose" onclick="editPerson('${p.id}')">🛠 ${t(UI.adminEdit)}</button>`:''}
+      ${ADMIN?`<button class="btn" onclick="editPerson('${p.id}')">🛠 ${t(UI.adminEdit)}</button>`:''}
       <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button></div></div>
   <div class="person-layout"><div>
     <h3 style="font-weight:normal;margin-bottom:8px">${t(UI.article)}</h3>
@@ -943,7 +947,7 @@ function vSource(id,extra){
     <div class="page-sub"><span class="badge type">${t(s.type)}</span> &nbsp;${statusBadge(s.status)}</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="propose" onclick="mappeAdd('page','${id}',${pi})">🗂 ${t(UI.mappeAdd)}</button>
-      ${ADMIN?`<button class="propose" onclick="editPage('${id}',${pi})">🛠 ${t(UI.adminEdit)}</button>`:''}
+      ${ADMIN?`<button class="btn" onclick="editPage('${id}',${pi})">🛠 ${t(UI.adminEdit)}</button>`:''}
       <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button></div></div>
   <div class="card" style="margin-top:6px"><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;font-family:var(--sans);font-size:13px">
     <div><div class="meta">${t(meta.sig)}</div>${s.sig}</div>
@@ -1203,9 +1207,18 @@ function efield(id,lbl,val){return `<label class="elab" for="${id}">${typeof lbl
 function earea(id,lbl,val,rows){return `<label class="elab" for="${id}">${typeof lbl==='string'?lbl:t(lbl)}</label><textarea class="ein" id="${id}" rows="${rows||4}">${eq(val)}</textarea>`;}
 function adminToggle(){
   if(ADMIN){ADMIN=false;render();return;}
-  const pw=prompt(t(UI.adminPrompt));
-  if(pw===ADMIN_PW){ADMIN=true;render();}
-  else if(pw!==null){alert(t(UI.adminWrong));}
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:380px"><h3>⚙ ${t(UI.adminPrompt)}</h3>
+   <input class="ein" id="admPw" type="password" style="margin:10px 0" onkeydown="if(event.key==='Enter')adminTry()">
+   <div id="admErr" class="meta" style="color:var(--accent)"></div>
+   <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+   <button class="btn" onclick="adminTry()">OK</button></div></div></div>`;
+  setTimeout(()=>{const el=document.getElementById('admPw');if(el)el.focus();},50);
+}
+function adminTry(){
+  const el=document.getElementById('admPw'); if(!el)return;
+  if(el.value===ADMIN_PW){ADMIN=true;closeModal();render();}
+  else{document.getElementById('admErr').textContent=t(UI.adminWrong);el.select();}
 }
 function editPerson(id){
   const p=P(id);if(!p)return;
@@ -1499,10 +1512,10 @@ function render(){
   }
   document.getElementById('footer').textContent=t(UI.footer);
   document.getElementById('adminBar').innerHTML=ADMIN?`<div style="background:var(--accent);color:#f6ecdd;font-family:var(--sans);font-size:12.5px;padding:7px 26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:60">
-    <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: ${EDITCOUNT}</span>
-    <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="dataExport()">⬇ ${t(UI.adminExport)}</button>
+    <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: <b>${EDITCOUNT}</b></span>
+    <button class="btn ${EDITCOUNT?'':'ghost'}" style="${EDITCOUNT?'background:#f6ecdd;color:var(--accent);font-weight:700':'color:#f6ecdd;border-color:rgba(246,236,221,.5)'}" onclick="dataExport()">⬇ ${t(UI.adminExport)}${EDITCOUNT?' ('+EDITCOUNT+')':''}</button>
     <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="dataImport()">⬆ ${t(UI.adminImport)}</button>
-    <span style="opacity:.8">${t(UI.adminExpHint)}</span>
+    <span style="opacity:.85;max-width:520px">${t(UI.adminHow)}</span>
     <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5);margin-left:auto" onclick="adminToggle()">✕</button></div>`:'';
   document.getElementById('langSwitch').innerHTML=['de','en','pl'].map(l=>
     `<button class="${LANG===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('');
