@@ -330,6 +330,18 @@
   .mentcard .mhead{font-family:var(--sans);font-size:12px;color:var(--ink-faint);margin-bottom:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
   .mentcard .mlink{margin-left:auto;font-size:12.5px;white-space:nowrap}
   @media(max-width:760px){.phead{grid-template-columns:96px 1fr}.phead .pportrait{width:96px}.phead>div:last-child{grid-column:1/-1}}
+  /* ---------- Redesign 2026: Zeitleiste + Stammbaum ---------- */
+  .timeline li.hist::before{background:#a09480}
+  .tl-hist-tag{font-family:var(--sans);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:#7c7260;background:#eee7d6;border:1px solid var(--line);border-radius:3px;padding:1px 7px;margin-left:8px}
+  .timeline li.hist h4,.timeline li.hist p{color:var(--ink-soft)}
+  .timeline li.hist .tl-date{color:#8a7c66}
+  .genrow{margin-bottom:16px}
+  .genrow .tlabel{text-align:left;padding-left:2px}
+  .genrow .gcards{display:flex;gap:8px;flex-wrap:wrap}
+  .tcard-thumb{width:30px;height:30px;flex:none;border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+  .tcard-thumb img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+  .tcard-thumb .mono{font-size:12px}
 </style>
 </head>
 <body>
@@ -509,6 +521,13 @@ const UI={
   personsSub:{de:'Alle im Archiv erfassten und erwähnten Personen',en:'Everyone recorded or mentioned in the archive',pl:'Wszystkie osoby ujęte lub wspomniane w archiwum'},
   sourcesSub:{de:'Der Quellenfundus: Originale, Transkripte, Übersetzungen',en:'The source collection: originals, transcripts, translations',pl:'Zbiór źródeł: oryginały, transkrypcje, tłumaczenia'},
   tlAll:{de:'Alles',en:'All',pl:'Wszystko'},
+  tlHist:{de:'Historischer Kontext',en:'Historical context',pl:'Kontekst historyczny'},
+  tlPerson:{de:'Nur Ereignisse von:',en:'Only events of:',pl:'Tylko wydarzenia:'},
+  treeSearchPh:{de:'Person im Stammbaum suchen …',en:'Find a person in the tree …',pl:'Znajdź osobę w drzewie …'},
+  treeFamView:{de:'Familienansicht',en:'Family view',pl:'Widok rodziny'},
+  treeHourView:{de:'Sanduhr (Vorfahren + Nachfahren)',en:'Hourglass (ancestors + descendants)',pl:'Klepsydra (przodkowie + potomkowie)'},
+  genLabels:{u3:{de:'Urgroßeltern',en:'Great-grandparents',pl:'Pradziadkowie'},u2:{de:'Großeltern',en:'Grandparents',pl:'Dziadkowie'},u1:{de:'Eltern',en:'Parents',pl:'Rodzice'},
+    d1:{de:'Kinder',en:'Children',pl:'Dzieci'},d2:{de:'Enkel',en:'Grandchildren',pl:'Wnuki'},d3:{de:'Urenkel',en:'Great-grandchildren',pl:'Prawnuki'}},
   tlEvents:{de:'Ereignisse aus Quellen',en:'Events from sources',pl:'Wydarzenia ze źródeł'},
   tlLife:{de:'Geburten & Todesfälle',en:'Births & deaths',pl:'Urodzenia i zgony'},
   tlLifeNote:{de:'Lebensdaten automatisch aus dem Stammbaum (ab 1800)',en:'Life dates drawn automatically from the family tree (from 1800)',pl:'Daty życia automatycznie z drzewa (od 1800)'},
@@ -1141,11 +1160,18 @@ function lifeEvents(){
   });
   return out;
 }
-let TLF='all';
+let TLF='all',THIST=true,TLP='';
 function setTlf(v){TLF=v;render();}
+function setThist(v){THIST=v;render();}
+function setTlp(v){TLP=v;render();}
 function vTimeline(){
-  const evs=EVENTS.map(e=>({iso:e.date,disp:e.date,kind:'event',e}));
-  const life=lifeEvents();
+  let fam=EVENTS.filter(e=>!e.hist);
+  let hist=THIST?EVENTS.filter(e=>e.hist):[];
+  if(TLP){fam=fam.filter(e=>(e.persons||[]).includes(TLP));hist=[];}
+  const evs=fam.map(e=>({iso:e.date,disp:e.date,kind:'event',e}))
+    .concat(hist.map(e=>({iso:e.date,disp:e.date,kind:'hist',e})));
+  let life=lifeEvents();
+  if(TLP)life=life.filter(x=>x.pid===TLP);
   let items=TLF==='event'?evs:TLF==='life'?life:evs.concat(life);
   items.sort((a,b)=>a.iso.localeCompare(b.iso));
   // nach Jahrhundert gruppieren
@@ -1159,6 +1185,10 @@ function vTimeline(){
   const centKeys=[...cents.keys()].sort((a,b)=>a-b);
   const centLbl=c=>c+'. '+({de:'Jahrhundert',en:'century',pl:'wiek'}[LANG]||'Jahrhundert');
   const renderItem=it=>{
+    if(it.kind==='hist'){
+      const e=it.e;
+      return `<li class="hist"><div class="tl-date">${e.date}<span class="tl-hist-tag">🏛 ${t(UI.tlHist)}</span></div><h4>${t(e.title)}</h4><p>${t(e.text)}</p></li>`;
+    }
     if(it.kind==='event'){
       const e=it.e;
       return `<li><div class="tl-date">${e.date}</div><h4>${t(e.title)}</h4><p>${t(e.text)}</p>
@@ -1179,11 +1209,20 @@ function vTimeline(){
     });
     return `<details class="tl-cent" id="cent${c}" ${open?'open':''}><summary>${centLbl(c)} <span class="meta">(${list.length})</span></summary><ul class="timeline">${inner}</ul></details>`;
   }).join('');
+  const evPersons=new Map();
+  EVENTS.forEach(e=>(e.persons||[]).forEach(pid=>{const p=P(pid);if(p)evPersons.set(pid,p.name);}));
   return `<h2 class="page">${t(UI.nav.timeline)}</h2><div class="page-sub">${t(UI.timelineSub)} · ${t(UI.tlLifeNote)}</div>
-  <div class="filterbar">
+  <div class="filterbar" style="align-items:center">
     <button class="${TLF==='all'?'active':''}" onclick="setTlf('all')">${t(UI.tlAll)}</button>
     <button class="${TLF==='event'?'active':''}" onclick="setTlf('event')">${t(UI.tlEvents)} (${evs.length})</button>
     <button class="${TLF==='life'?'active':''}" onclick="setTlf('life')">${t(UI.tlLife)} (${life.length})</button>
+    <button class="${THIST?'active':''}" style="${THIST?'background:#8a7c66;border-color:#8a7c66':''}" onclick="setThist(${THIST?'false':'true'})">🏛 ${t(UI.tlHist)}</button>
+    <span style="flex:1"></span>
+    <span><span class="lbl" style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:2px">${t(UI.tlPerson)}</span>
+    <select onchange="setTlp(this.value)" style="font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--card);color:var(--ink);max-width:210px">
+      <option value="">${t(UI.fltAll)}</option>
+      ${[...evPersons.entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([v,l])=>`<option value="${v}" ${TLP===v?'selected':''}>${l}</option>`).join('')}
+    </select></span>
   </div>
   <div class="chips" style="margin:0 0 16px">${centKeys.map(c=>`<span class="chip" onclick="const d=document.getElementById('cent${c}');d.open=true;d.scrollIntoView({behavior:'smooth'})">${centLbl(c)}</span>`).join('')}</div>
   ${blocks}`;
@@ -1200,27 +1239,53 @@ function treeJump(i){const target=TH[i];TH=TH.slice(0,i);go('tree',target);}
 function treeCard(id,big){
   const p=P(id); if(!p) return '';
   const dates=(p.born&&p.born!=='?'?'*'+p.born:'')+(p.died?' · †'+p.died:'');
-  return `<div class="card" style="cursor:pointer;padding:${big?'14px 18px':'9px 13px'};${big?'border-left:5px solid var(--accent);':''}" onclick="treeGo('${id}')">
-    <b style="font-size:${big?'17':'13.5'}px">${p.name}</b>${p.living?` <span class="badge rough">${t(UI.stLiving)}</span>`:''}
-    <div class="meta" style="margin:2px 0 0">${dates||'—'}${big&&p.bornp?`<br>*&nbsp;${p.bornp}`:''}${big&&p.diedp?`<br>†&nbsp;${p.diedp}`:''}</div>
+  const thumb=`<div class="tcard-thumb">${(p.img&&IMGS[p.img])?`<img src="${IMGS[p.img]}">`:monoHtml(p)}</div>`;
+  return `<div class="card" style="cursor:pointer;padding:${big?'14px 18px':'8px 12px'};${big?'border-left:5px solid var(--accent);':''}" onclick="treeGo('${id}')">
+    <div style="display:flex;gap:9px;align-items:center">${thumb}<div>
+    <b style="font-size:${big?'17':'13.5'}px">${p.name}</b>${p.living?` <span class="badge rough" title="${t(UI.privLong)}">🔒</span>`:''}
+    <div class="meta" style="margin:1px 0 0">${dates||'—'}${big&&p.bornp?`<br>*&nbsp;${p.bornp}`:''}${big&&p.diedp?`<br>†&nbsp;${p.diedp}`:''}</div></div></div>
     ${big?`<div style="margin-top:8px"><a onclick="event.stopPropagation();go('person','${id}')" style="font-family:var(--sans);font-size:12.5px">${t(UI.openArticle)} →</a></div>`:''}
   </div>`;
+}
+let TMODE='fam';
+function setTmode(v){TMODE=v;render();}
+function treeSearch(val){
+  if(!val)return;
+  const toks=norm(val).split(/\s+/).filter(Boolean);
+  const p=PERSONS.find(x=>x.name===val)
+    ||PERSONS.find(x=>{const n=norm(x.name);return toks.every(tk=>n.includes(tk));});
+  if(p)treeGo(p.id);
+}
+function genStep(ids,key){
+  const out=[];const seen=new Set();
+  ids.forEach(i=>{const r=window.RELX&&RELX[i];if(!r)return;
+    (r[key]||[]).forEach(x=>{if(!seen.has(x)&&P(x)){seen.add(x);out.push(x);}});});
+  return out;
+}
+function vTreeHour(focus){
+  const rows=[];
+  let up=[focus];
+  const ups=[];
+  for(let g=1;g<=3;g++){up=genStep(up,'par');if(up.length)ups.push([g,up]);else break;}
+  ups.reverse().forEach(([g,ids])=>rows.push([t(UI.genLabels['u'+g]),ids]));
+  const r=(window.RELX&&RELX[focus])||{spo:[]};
+  rows.push([null,[focus].concat(r.spo||[])]);
+  let down=[focus];
+  for(let g=1;g<=3;g++){down=genStep(down,'chi');if(down.length)rows.push([t(UI.genLabels['d'+g]),down]);else break;}
+  return rows.map(([lbl,ids])=>`<div class="genrow ${lbl===null?'':'tgroup'}" ${lbl===null?'style="padding:6px 0"':''}>
+    ${lbl?`<div class="tlabel">${lbl} (${ids.length})</div>`:''}
+    <div class="gcards" style="${lbl===null?'justify-content:center':''}">${ids.map(i=>treeCard(i,lbl===null&&i===focus)).join('')}</div></div>`).join('');
 }
 function vTree(focus){
   focus=(focus&&P(focus))?focus:'thomas';
   const r=(window.RELX&&RELX[focus])||{par:[],spo:[],chi:[],sib:[]};
   const cards=ids=>`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${ids.map(i=>treeCard(i)).join('')||`<span class="empty" style="font-size:13px">—</span>`}</div>`;
-  const grp=(arrow,lbl,ids,extra)=>`<div class="tgroup"${extra?` style="${extra}"`:''}><div class="tlabel">${arrow}&nbsp; ${lbl}</div>${cards(ids)}</div>`;
+  const grp=(arrow,lbl,ids,extra)=>`<div class="tgroup"${extra?` style="${extra}"`:''}><div class="tlabel" style="text-align:center">${arrow}&nbsp; ${lbl}</div>${cards(ids)}</div>`;
   const trail=[...TH,focus];
   const crumbs=trail.map((id,i)=>i===trail.length-1
     ?`<b style="color:var(--ink)">${P(id)?P(id).name:id}</b>`
     :`<a onclick="treeJump(${i})">${P(id)?P(id).name:id}</a>`).join(' &rsaquo; ');
-  return `<h2 class="page">${t(UI.nav.tree)}</h2><div class="page-sub">${t(UI.treeSub)}</div>
-  <div class="filterbar" style="align-items:center;gap:12px">
-    ${TH.length?`<button onclick="treeBack()">← ${t(UI.treeBack)}</button>`:''}
-    <span class="crumbs">${crumbs}</span>
-  </div>
-  <div class="tree3">
+  const body=TMODE==='hour'?vTreeHour(focus):`<div class="tree3">
     ${grp('▲',t(UI.fam.parents),r.par,'justify-self:center;min-width:min(620px,100%)')}
     <div class="tree-mid">
       ${grp('◀',t(UI.fam.siblings),r.sib)}
@@ -1229,6 +1294,15 @@ function vTree(focus){
     </div>
     ${grp('▼',t(UI.fam.children),r.chi,'justify-self:center;min-width:min(620px,100%)')}
   </div>`;
+  return `<h2 class="page">${t(UI.nav.tree)}</h2><div class="page-sub">${t(UI.treeSub)}</div>
+  <div class="filterbar" style="align-items:center;gap:12px">
+    ${TH.length?`<button onclick="treeBack()">← ${t(UI.treeBack)}</button>`:''}
+    <span class="crumbs">${crumbs}</span>
+    <span style="flex:1"></span>
+    <input class="ein" list="searchSugg" style="width:230px;font-family:var(--sans);font-size:13px" placeholder="${t(UI.treeSearchPh)}" onchange="treeSearch(this.value)" onkeydown="if(event.key==='Enter')treeSearch(this.value)">
+    <div class="viewtoggle"><button class="${TMODE==='fam'?'active':''}" onclick="setTmode('fam')">${t(UI.treeFamView)}</button><button class="${TMODE==='hour'?'active':''}" onclick="setTmode('hour')">⧖ ${t(UI.treeHourView)}</button></div>
+  </div>
+  ${body}`;
 }
 function vStrands(){
   return `<h2 class="page">${t(UI.nav.strands)}</h2><div class="page-sub">${t(UI.strandsSub)}</div>
