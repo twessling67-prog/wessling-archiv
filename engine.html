@@ -1511,12 +1511,13 @@ function render(){
     dl.innerHTML=sugg.map(x=>`<option value="${esc(x)}">`).join('');
   }
   document.getElementById('footer').textContent=t(UI.footer);
-  document.getElementById('adminBar').innerHTML=ADMIN?`<div style="background:var(--accent);color:#f6ecdd;font-family:var(--sans);font-size:12.5px;padding:7px 26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:60">
+  document.getElementById('adminBar').innerHTML=ADMIN?`<div style="background:var(--accent);color:#f6ecdd;font-family:var(--sans);font-size:12.5px;padding:8px 26px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:fixed;left:0;right:0;bottom:0;z-index:60;box-shadow:0 -4px 16px rgba(30,20,12,.25)">
     <b>⚙ ${t(UI.adminActive)}</b><span>${t(UI.adminEdits)}: <b>${EDITCOUNT}</b></span>
     <button class="btn ${EDITCOUNT?'':'ghost'}" style="${EDITCOUNT?'background:#f6ecdd;color:var(--accent);font-weight:700':'color:#f6ecdd;border-color:rgba(246,236,221,.5)'}" onclick="dataExport()">⬇ ${t(UI.adminExport)}${EDITCOUNT?' ('+EDITCOUNT+')':''}</button>
     <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="dataImport()">⬆ ${t(UI.adminImport)}</button>
-    <span style="opacity:.85;max-width:520px">${t(UI.adminHow)}</span>
-    <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5);margin-left:auto" onclick="adminToggle()">✕</button></div>`:'';
+    <span style="opacity:.85;flex:1;min-width:220px">${t(UI.adminHow)}</span>
+    <button class="btn ghost" style="color:#f6ecdd;border-color:rgba(246,236,221,.5)" onclick="adminToggle()">✕</button></div>`:'';
+  document.body.style.paddingBottom=ADMIN?'70px':'';
   document.getElementById('langSwitch').innerHTML=['de','en','pl'].map(l=>
     `<button class="${LANG===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('');
   const active=['person','persons'].includes(VIEW.name)?'archiv'
