@@ -599,7 +599,11 @@ const UI={
   footer:{de:'Wessling-Familienarchiv · privat, nur für die Familie · Transkriptionen in familiärer Prüfung',
     en:'Wessling family archive · private, family only · transcriptions under family review',
     pl:'Archiwum rodziny Wessling · prywatne, tylko dla rodziny · transkrypcje w trakcie weryfikacji'},
-  translMissing:{de:'Übersetzung folgt — Original siehe Lesefassung.',en:'Translation to follow — see the reading version for the original.',pl:'Tłumaczenie wkrótce — oryginał w wersji czytelnej.'}
+  translMissing:{de:'Übersetzung folgt — Original siehe Lesefassung.',en:'Translation to follow — see the reading version for the original.',pl:'Tłumaczenie wkrótce — oryginał w wersji czytelnej.'},
+  mediaLoad:{de:'Audio laden & abspielen',en:'Load & play audio',pl:'Wczytaj i odtwórz audio'},
+  mediaLoading:{de:'Audio wird geladen und entschlüsselt …',en:'Loading and decrypting audio …',pl:'Wczytywanie i odszyfrowywanie audio …'},
+  mediaHint:{de:'Die Datei wird verschlüsselt übertragen und erst in deinem Browser entschlüsselt.',en:'The file is transferred encrypted and only decrypted in your browser.',pl:'Plik jest przesyłany w postaci zaszyfrowanej i odszyfrowywany dopiero w Twojej przeglądarce.'},
+  mediaErr:{de:'Wiedergabe hier nicht möglich — Mediendateien funktionieren nur in der Online-Version (wessling-family.com).',en:'Playback not possible here — media files only work in the online version (wessling-family.com).',pl:'Odtwarzanie tutaj niemożliwe — pliki multimedialne działają tylko w wersji online (wessling-family.com).'}
 };
 
 
@@ -1040,13 +1044,40 @@ function fakeScan(){
     <path d="M14 12 l 4 200" stroke="#e4d7b6" stroke-width="3"/>${lines}
     <text x="110" y="205" text-anchor="middle" font-size="7" fill="#a3906d" font-family="sans-serif">— ${t(UI.scanPh)} —</text></svg>`;
 }
+async function loadMedia(sid){
+  const s=S(sid); if(!s||!s.media)return;
+  const slot=document.getElementById('mediaSlot'); if(!slot)return;
+  slot.innerHTML=`<div class="meta">⏳ ${t(UI.mediaLoading)}</div>`;
+  try{
+    let pw='';try{pw=window.top.WFA_PW||'';}catch(e){}
+    if(!pw)pw=window.WFA_PW||'';
+    if(!pw)throw new Error('no pw');
+    const r=await fetch('media/'+encodeURIComponent(s.media.file)+'.enc');
+    if(!r.ok)throw new Error('http '+r.status);
+    const buf=new Uint8Array(await r.arrayBuffer());
+    const salt=buf.slice(0,16),nonce=buf.slice(16,28),ct=buf.slice(28);
+    const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:nonce},key,ct);
+    const url=URL.createObjectURL(new Blob([pt],{type:s.media.mime||'audio/mp4'}));
+    slot.innerHTML=`<audio controls autoplay style="width:100%;margin-top:4px" src="${url}"></audio><div class="meta" style="margin-top:6px">${t(UI.mediaHint)}</div>`;
+  }catch(e){slot.innerHTML=`<div class="note">${t(UI.mediaErr)}</div>`;}
+}
+function mediaBlock(s){
+  if(!s.media)return'';
+  return `<div class="card" style="margin-top:14px;border-left:5px solid var(--gold)">
+    <div class="meta" style="margin-bottom:8px">🎧 ${s.media.dur||''} · ${s.media.mb||'?'} MB</div>
+    <div id="mediaSlot"><button class="btn big" onclick="loadMedia('${s.id}')">▶ ${t(UI.mediaLoad)} (${s.media.mb} MB)</button>
+    <div class="meta" style="margin-top:8px">${t(UI.mediaHint)}</div></div></div>`;
+}
 function vSource(id,extra){
   const s=S(id); if(!s) return '<p class="empty">?</p>';
   if(!s.pages.length){
     return `<a class="backlink" onclick="go('sources')">← ${t(UI.nav.sources)}</a>
   <div class="detail-head"><div><h2 class="page">${t(s.title)}</h2>
     <div class="page-sub"><span class="badge type">${t(s.type)}</span> &nbsp;${statusBadge(s.status)} &nbsp; ${s.sig} · ${s.date}</div></div></div>
-  <div class="card" style="margin-top:6px"><div class="meta">${t(UI.srcMeta.prov)}</div>
+  ${mediaBlock(s)}
+  <div class="card" style="margin-top:14px"><div class="meta">${t(UI.srcMeta.prov)}</div>
     <p style="font-size:13.5px;font-family:var(--sans);color:var(--ink-soft)">${t(s.prov)}</p>
     <hr class="rule" style="margin:12px 0"><div class="meta">${t(UI.summary)}</div>
     <p style="font-size:14.5px">${t(s.summary)}</p><div class="chips">${chipTags(s.tags)}</div></div>`;

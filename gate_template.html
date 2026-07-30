@@ -48,6 +48,7 @@ async function unlock(pwArg){
     try{
       if(!auto&&document.getElementById('remember').checked){localStorage.setItem('wfa_pw',btoa(unescape(encodeURIComponent(pw))));}
     }catch(_){}
+    window.WFA_PW=pw;
     const f=document.createElement('iframe');
     f.setAttribute('style','position:fixed;inset:0;width:100vw;height:100vh;border:0;background:#f6f1e7');
     f.setAttribute('title','Archiv');

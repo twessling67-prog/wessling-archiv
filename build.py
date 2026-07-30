@@ -39,6 +39,37 @@ def encrypt(html, password):
     assert "__B64__" in gate, "Marker __B64__ fehlt in gate_template.html"
     return gate.replace("__B64__", b64)
 
+def encrypt_media(password):
+    """Verschluesselt Dateien aus media/ (oder ../Content/, wenn dort referenziert)
+    nach media-enc/<name>.enc — gleiches Format wie die Archivdatei (salt+nonce+ct, binaer)."""
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    src_dirs = [os.path.join(HERE, "media"), os.path.join(HERE, "..", "Content")]
+    data = json.load(open(os.path.join(HERE, "data.json"), encoding="utf-8"))
+    wanted = set()
+    for s in data.get("sources", []):
+        m = s.get("media")
+        if m and m.get("file"):
+            wanted.add(m["file"])
+    if not wanted:
+        return
+    outdir = os.path.join(HERE, "media-enc")
+    os.makedirs(outdir, exist_ok=True)
+    for name in sorted(wanted):
+        path = None
+        for d in src_dirs:
+            cand = os.path.join(d, name)
+            if os.path.exists(cand):
+                path = cand; break
+        if not path:
+            print("media FEHLT:", name); continue
+        raw = open(path, "rb").read()
+        salt = secrets.token_bytes(16); nonce = secrets.token_bytes(12)
+        key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 250000, 32)
+        ct = AESGCM(key).encrypt(nonce, raw, None)
+        out = os.path.join(outdir, name + ".enc")
+        open(out, "wb").write(salt + nonce + ct)
+        print("media verschluesselt:", out, len(raw)//1024//1024, "MB")
+
 if __name__ == "__main__":
     html = build_plain()
     if "--encrypt" in sys.argv:
@@ -46,6 +77,7 @@ if __name__ == "__main__":
         out = os.path.join(HERE, "index.html")
         open(out, "w", encoding="utf-8").write(encrypt(html, cfg["password"]))
         print("geschrieben:", out)
+        encrypt_media(cfg["password"])
     else:
         out = os.path.join(HERE, "archiv_klar.html")
         open(out, "w", encoding="utf-8").write(html)
