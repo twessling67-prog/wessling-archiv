@@ -159,7 +159,7 @@ $einzeln     = isset($_GET['einzeln']);
 
 $eintraege = wfa_eintraege($monat);
 if (!$bots_zeigen) {
-    $eintraege = array_values(array_filter($eintraege, fn($e) => !$e['bot']));
+    $eintraege = array_values(array_filter($eintraege, fn($e) => !$e['maschine']));
 }
 $besuche = wfa_besuche($eintraege);
 
@@ -170,12 +170,12 @@ if (isset($_GET['csv'])) {
     $out = fopen('php://output', 'w');
     fwrite($out, "\xEF\xBB\xBF");
     fputcsv($out, ['Beginn', 'Dauer (Min.)', 'Aufrufe', 'Land', 'Anbieter', 'Gerät',
-                   'System', 'Browser', 'Sprache', 'IP', 'Besucherkennung', 'Bot'], ';');
+                   'System', 'Browser', 'Sprache', 'IP', 'Besucherkennung', 'Automatisch'], ';');
     foreach ($besuche as $b) {
         fputcsv($out, [
             date('Y-m-d H:i:s', $b['beginn']), round(($b['ende'] - $b['beginn']) / 60, 1),
             $b['aufrufe'], $b['land'], $b['anbieter'], $b['geraet'], $b['system'],
-            $b['browser'], $b['sprache'], $b['ip'], $b['kennung'], $b['bot'] ? 'ja' : 'nein',
+            $b['browser'], $b['sprache'], $b['ip'], $b['kennung'], $b['maschine'] ? 'ja' : 'nein',
         ], ';');
     }
     fclose($out);
@@ -210,7 +210,7 @@ wfa_seite_anfang('Zugriffe');
       </select>
     </label>
     <label class="haken"><input type="checkbox" name="bots" value="1"
-      onchange="this.form.submit()"<?= $bots_zeigen ? ' checked' : '' ?>> Suchmaschinen mitzählen</label>
+      onchange="this.form.submit()"<?= $bots_zeigen ? ' checked' : '' ?>> Maschinen mitzählen</label>
     <label class="haken"><input type="checkbox" name="einzeln" value="1"
       onchange="this.form.submit()"<?= $einzeln ? ' checked' : '' ?>> Einzelne Aufrufe statt Besuche</label>
     <a class="knopf leise" href="?monat=<?= h($monat) ?><?= $bots_zeigen ? '&bots=1' : '' ?>&csv=1">Als Tabelle laden</a>
@@ -233,7 +233,7 @@ wfa_seite_anfang('Zugriffe');
       <th>Browser</th><th>Sprache</th><th>IP</th><th>Besucher</th></tr></thead>
     <tbody>
     <?php foreach (array_reverse($eintraege) as $e): ?>
-      <tr<?= $e['bot'] ? ' class="bot"' : '' ?>>
+      <tr<?= $e['maschine'] ? ' class="bot"' : '' ?>>
         <td class="nowrap"><?= h(date('d.m.Y H:i:s', $e['ts'])) ?></td>
         <td><?= h($e['land']) ?></td>
         <td class="anbieter"><?= h($e['anbieter'] ?: '—') ?></td>
@@ -252,7 +252,7 @@ wfa_seite_anfang('Zugriffe');
       <th>Gerät</th><th>Sprache</th><th>IP</th><th>Besucher</th></tr></thead>
     <tbody>
     <?php foreach ($besuche as $b): ?>
-      <tr<?= $b['bot'] ? ' class="bot"' : '' ?>>
+      <tr<?= $b['maschine'] ? ' class="bot"' : '' ?>>
         <td class="nowrap"><?= h(date('d.m.Y H:i', $b['beginn'])) ?></td>
         <td class="nowrap"><?= h($b['ende'] > $b['beginn'] ? wfa_dauer($b['ende'] - $b['beginn']) : '—') ?></td>
         <td><?= (int) $b['aufrufe'] ?></td>
@@ -268,7 +268,11 @@ wfa_seite_anfang('Zugriffe');
   </table>
   <p class="fussnote">„Besucher" ist eine anonyme Kennung aus Adresse und Browser — gleiche Kennung heißt
      mit hoher Wahrscheinlichkeit dieselbe Person. Aufrufe desselben Besuchers innerhalb einer halben Stunde
-     gelten als ein Besuch; die Dauer ist der Abstand vom ersten zum letzten Seitenaufruf.</p>
+     gelten als ein Besuch; die Dauer ist der Abstand vom ersten zum letzten Seitenaufruf.<br>
+     Zugriffe aus Rechenzentren, von Hostern und über VPN-Ausgänge (Amazon, Google, OVH, Scaleway, M247 …)
+     sind <strong>keine Menschen</strong>, sondern Suchprogramme, die das ganze Internet abklappern. Sie werden
+     hier standardmäßig ausgeblendet — über „Maschinen mitzählen" lassen sie sich grau einblenden.
+     Echte Familienbesuche kommen über Anbieter wie Telekom, Vodafone, Orange oder Vectra.</p>
 <?php endif; ?>
 
 <details class="einstellungen">

@@ -283,6 +283,40 @@ function wfa_geraet(string $ua): array
     return [$geraet, $system, $browser, $bot];
 }
 
+/**
+ * Erkennt Rechenzentren, Hoster und VPN-Ausgaenge am Anbieternamen.
+ * Solche Zugriffe stammen praktisch immer von automatischen Suchprogrammen,
+ * die das ganze Internet abklappern — keine Menschen. Echte Anschluesse von
+ * Privatpersonen laufen ueber Anbieter wie Telekom, Vodafone, Orange, Vectra.
+ */
+function wfa_maschine(string $anbieter): bool
+{
+    if ($anbieter === '') {
+        return false;
+    }
+    $a = mb_strtolower($anbieter);
+    static $muster = [
+        // allgemeine Hinweise im Namen
+        'hosting', 'hoster', 'host', 'cloud', 'datacenter', 'data center', 'datacentre',
+        'rechenzentrum', 'server', 'colocation', 'vps', 'dedicated', 'web services',
+        // bekannte Anbieter von Rechenleistung und VPN-Ausgaengen
+        'amazon', 'google', 'microsoft', 'oracle', 'alibaba', 'tencent', 'huawei', 'ovh',
+        'scaleway', 'hetzner', 'digitalocean', 'digital ocean', 'linode', 'akamai',
+        'cloudflare', 'fastly', 'vultr', 'choopa', 'contabo', 'netcup', 'ionos', 'strato',
+        'godaddy', 'namecheap', 'leaseweb', 'm247', 'datacamp', 'nexeon', 'psychz',
+        'colocrossing', 'quadranet', 'zenlayer', 'ucloud', 'rackspace', 'oxylabs',
+        'packethub', 'privax', 'nordvpn', 'surfshark', 'mullvad', 'protonvpn', 'expressvpn',
+        'censys', 'shodan', 'stretchoid', 'internet measurement', 'hurricane electric',
+        'limestone', 'hivelocity', 'servermania', 'digitalocean', 'aeza', 'stark industries',
+    ];
+    foreach ($muster as $wort) {
+        if (str_contains($a, $wort)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function wfa_sprache(): string
 {
     $roh = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
@@ -415,6 +449,7 @@ function wfa_eintraege(string $monat): array
             $eintrag[$name] = $teile[$i] ?? '';
         }
         $eintrag['bot'] = ($eintrag['bot'] === '1');
+        $eintrag['maschine'] = $eintrag['bot'] || wfa_maschine($eintrag['anbieter']);
         $eintrag['land'] = wfa_landesname($eintrag['cc']);
         $eintrag['ts'] = strtotime($eintrag['zeit']) ?: 0;
         $out[] = $eintrag;
@@ -450,6 +485,7 @@ function wfa_besuche(array $eintraege): array
                 'sprache'  => $e['sprache'],
                 'ip'       => $e['ip'],
                 'bot'      => $e['bot'],
+                'maschine' => $e['maschine'],
             ];
             $offen[$k] = count($besuche) - 1;
         }
