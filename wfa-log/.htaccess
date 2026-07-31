@@ -1,0 +1,15 @@
+# Alles in diesem Ordner ist gesperrt — nur die Auswertungsseite ist erreichbar.
+<IfModule mod_authz_core.c>
+  Require all denied
+  <Files "zugriffe.php">
+    Require all granted
+  </Files>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+  <Files "zugriffe.php">
+    Order allow,deny
+    Allow from all
+  </Files>
+</IfModule>

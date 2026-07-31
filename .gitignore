@@ -1,0 +1,5 @@
+# Laufzeitdaten des Zugriffsprotokolls — bleiben auf dem Server
+wfa-log/log/*
+!wfa-log/log/.htaccess
+wfa-log/config.php
+wfa-log/.versuche

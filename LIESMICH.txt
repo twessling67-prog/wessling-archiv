@@ -1,0 +1,78 @@
+WESSLING FAMILIENARCHIV — KOMPLETTPAKET FÜR public_html
+=======================================================
+Stand: 31. Juli 2026
+
+Dieses Paket enthält den vollständigen Inhalt des Ordners public_html auf
+wessling-family.com. Einmal hochladen, entpacken, fertig — es müssen keine
+Dateien einzeln gesucht oder ersetzt werden.
+
+
+So spielst du es ein
+--------------------
+1. hPanel → Dateimanager → Ordner public_html öffnen.
+2. Die ZIP-Datei hier hochladen und entpacken.
+3. Beim Nachfragen das Überschreiben bestätigen.
+
+Das genügt. Falls du public_html lieber komplett leerräumst, bevor du
+entpackst: Bitte den Ordner  wfa-log/log  und die Datei  wfa-log/config.php
+stehen lassen — darin stecken das Zugriffs-Logbuch und dein Passwort für die
+Auswertungsseite. Beide sind in diesem Paket bewusst NICHT enthalten, damit
+ein Austausch sie niemals überschreibt.
+
+
+Was drin ist
+------------
+index.html                 Das Archiv, verschlüsselt (9,5 MB) — unverändert
+                           gegenüber dem Master in OneDrive (Prüfsumme
+                           abgeglichen).
+index.php                  Liefert die Startseite aus und schreibt vorher
+                           einen Eintrag ins Zugriffsprotokoll.
+.htaccess                  Zwei Regeln: Startseite über index.php, und die
+                           bisherige no-cache-Regel für index.html.
+favicon-32.png             Markenzeichen (Handschrift-W)
+favicon-64.png
+apple-touch-icon.png
+icon-192.png
+icon-512.png
+manifest.webmanifest       für „Zum Home-Bildschirm hinzufügen"
+media/*.enc                Verschlüsseltes Medienpaket (Podcast Q-AV-01,
+                           34 MB) — wird erst beim Abspielen geladen.
+wfa-log/                   Zugriffsprotokoll (siehe unten)
+
+
+Zugriffsprotokoll
+-----------------
+Aufruf:  https://wessling-family.com/wfa-log/zugriffe.php
+
+Beim allerersten Aufruf wird einmalig ein Passwort für diese Seite vergeben
+(bitte ein anderes als das Archiv-Passwort). Danach zeigt sie je Monat: Zahl
+der Besuche, verschiedene Besucher, Herkunftsländer sowie eine Tabelle mit
+Beginn, Dauer, Anzahl der Aufrufe, Land, Internetanbieter, Gerät, System und
+Sprache. Umschaltbar zwischen Besuchen und Einzelaufrufen, Suchmaschinen
+zuschaltbar, Export als Tabelle für Excel.
+
+Land und Anbieter werden offline anhand der Tabellen in wfa-log/data
+bestimmt — es geht keine Anfrage an einen fremden Dienst. IP-Adressen werden
+voreingestellt nur gekürzt gespeichert (84.140.x.x) und nach 24 Monaten
+automatisch gelöscht; beides in den Einstellungen der Seite änderbar.
+
+Hast du das Protokoll schon einmal eingerichtet, bleibt dein Passwort
+erhalten — config.php liegt auf dem Server und wird von diesem Paket nicht
+angefasst.
+
+
+Falls etwas klemmt
+------------------
+* zugriffe.php meldet 403 oder „Zugriff verweigert":
+  Die Datei wfa-log/.htaccess löschen. Die Logbuchdateien bleiben trotzdem
+  geschützt, sie tragen eine eigene Schutzzeile.
+
+* Die Website lädt, aber es erscheinen keine Protokolleinträge:
+  Prüfen, ob die .htaccess mit hochgeladen wurde (sie ist versteckt — im
+  Dateimanager „versteckte Dateien anzeigen" einschalten) und die Zeile
+  DirectoryIndex index.php index.html enthält.
+
+* Beim Festlegen des Passworts erscheint eine Meldung über Schreibrechte:
+  Im Dateimanager beim Ordner wfa-log die Berechtigungen auf 755 setzen.
+
+* Der Browser zeigt eine alte Fassung: einmal Strg+F5.
