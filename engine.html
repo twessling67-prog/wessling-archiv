@@ -458,6 +458,16 @@ const UI={
   adminEdits:{de:'Änderungen',en:'Edits',pl:'Zmiany'},
   adminExport:{de:'Daten exportieren',en:'Export data',pl:'Eksport danych'},
   adminImport:{de:'Daten importieren',en:'Import data',pl:'Import danych'},
+  phAdd:{de:'Foto hinzufügen',en:'Add photo',pl:'Dodaj zdjęcie'},
+  phAssign:{de:'Foto zuordnen',en:'Assign photo',pl:'Przypisz zdjęcie'},
+  phCaption:{de:'Bildunterschrift',en:'Caption',pl:'Podpis'},
+  phPersons:{de:'Personen im Bild',en:'People in the picture',pl:'Osoby na zdjęciu'},
+  phAddPerson:{de:'Person hinzufügen …',en:'Add person …',pl:'Dodaj osobę …'},
+  phPortraitOf:{de:'Als Porträt verwenden für',en:'Use as portrait for',pl:'Użyj jako portretu dla'},
+  phNone:{de:'— niemanden —',en:'— nobody —',pl:'— nikogo —'},
+  phFile:{de:'Bilddatei wählen',en:'Choose image file',pl:'Wybierz plik obrazu'},
+  phPortrait:{de:'Porträt',en:'Portrait',pl:'Portret'},
+  phMono:{de:'— Monogramm (kein Foto) —',en:'— monogram (no photo) —',pl:'— monogram (bez zdjęcia) —'},
   adminImported:{de:'Daten importiert.',en:'Data imported.',pl:'Dane zaimportowane.'},
   adminExpHint:{de:'Exportierte JSON-Datei in den OneDrive-Ordner legen oder an Claude senden — sie wird in die Masterdatei eingespielt.',
     en:'Place the exported JSON in the OneDrive folder or send it to Claude — it will be merged into the master file.',
@@ -895,7 +905,7 @@ function vPerson(id){
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
       <button class="propose" onclick="mappeAdd('person','${p.id}')">🗂 ${t(UI.mappeAdd)}</button>
-      ${ADMIN?`<button class="btn" onclick="editPerson('${p.id}')">🛠 ${t(UI.adminEdit)}</button>`:''}
+      ${ADMIN?`<button class="btn" onclick="editPerson('${p.id}')">🛠 ${t(UI.adminEdit)}</button> <button class="btn ghost" onclick="photoAddDlg('${p.id}')">📷 ${t(UI.phAdd)}</button>`:''}
       <button class="propose" onclick="openModal()">✎ ${t(UI.propose)}</button>
     </div>
   </div>
@@ -1437,7 +1447,7 @@ let EDITS={p:{},g:{}};
 function loadEdits(){
   try{const s=localStorage.getItem('wfa_edits');if(s)EDITS=JSON.parse(s);}catch(e){}
   if(!EDITS||typeof EDITS!=='object')EDITS={p:{},g:{}};
-  EDITS.p=EDITS.p||{};EDITS.g=EDITS.g||{};
+  EDITS.p=EDITS.p||{};EDITS.g=EDITS.g||{};EDITS.imgs=EDITS.imgs||{};EDITS.ph=EDITS.ph||{};EDITS.pimg=EDITS.pimg||{};
 }
 function saveEdits(){
   try{
@@ -1462,8 +1472,16 @@ function applyEdits(){
     const e=EDITS.g[key];
     if(e.label!==undefined)pg.label=e.label;if(e.dipl!==undefined)pg.dipl=e.dipl;
     if(e.read)pg.read=e.read;n++;}
+  if(typeof IMGS!=='undefined'){for(const k in EDITS.imgs){IMGS[k]=EDITS.imgs[k];}}
+  window.PHOTOS=window.PHOTOS||[];
+  for(const k in EDITS.ph){const e=EDITS.ph[k];let ph=PHOTOS.find(x=>x.k===k);
+    if(!ph){ph={k:k,file:'admin-upload',cap:'',persons:[]};PHOTOS.push(ph);}
+    if(e.cap!==undefined)ph.cap=e.cap;if(e.persons)ph.persons=e.persons.slice();n++;}
+  for(const id in EDITS.pimg){const p=P(id);if(!p)continue;
+    if(EDITS.pimg[id]){p.img=EDITS.pimg[id];}else{delete p.img;}n++;}
   EDITCOUNT=n;
 }
+function editCount(){return Object.keys(EDITS.p).length+Object.keys(EDITS.g).length+Object.keys(EDITS.ph).length+Object.keys(EDITS.pimg).length;}
 function discardEdits(){
   document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
    <div class="modal" style="max-width:420px"><h3>🗑 ${t(UI.adminDiscard)}</h3><p>${t(UI.adminDiscardAsk)}</p>
@@ -1498,6 +1516,8 @@ function editPerson(id){
    <div class="modal" style="max-width:660px;max-height:86vh;overflow:auto"><h3>🛠 ${p.name}</h3>
    ${efield('e_name',UI.eName,p.name)}${efield('e_forms',UI.eForms,p.nameForms)}
    ${efield('e_born','* (geb.)',p.born)}${efield('e_died','† (gest.)',p.died)}
+   <label class="elab">${t(UI.phPortrait)}</label>
+   <select class="ein" id="e_img"><option value="">${t(UI.phMono)}</option>${(window.PHOTOS||[]).filter(ph=>ph.persons.includes(id)).map(ph=>`<option value="${ph.k}" ${p.img===ph.k?'selected':''}>${eq(ph.cap||ph.k)}</option>`).join('')}</select>
    ${earea('e_biode','Artikel DE (HTML)',(p.bio&&p.bio.de)||'',5)}
    ${earea('e_bioen','Artikel EN (HTML)',(p.bio&&p.bio.en)||'',5)}
    ${earea('e_biopl','Artikel PL (HTML)',(p.bio&&p.bio.pl)||'',5)}
@@ -1510,8 +1530,11 @@ function savePerson(id){
   p.name=v('e_name');p.nameForms=v('e_forms');p.born=v('e_born');p.died=v('e_died');
   const bd=v('e_biode'),be=v('e_bioen'),bp=v('e_biopl');
   if(bd||be||bp) p.bio={de:bd,en:be,pl:bp};
+  const ivEl=document.getElementById('e_img');
+  if(ivEl){const iv=ivEl.value;
+    if(iv!==(p.img||'')){EDITS.pimg[id]=iv;if(iv){p.img=iv;}else{delete p.img;}}}
   EDITS.p[id]={name:p.name,nameForms:p.nameForms,born:p.born,died:p.died,bio:p.bio};
-  const ok=saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
+  const ok=saveEdits();EDITCOUNT=editCount();
   closeModal();render();
   toast(ok?t(UI.savedOk):t(UI.savedFail),ok);
 }
@@ -1533,12 +1556,12 @@ function savePage(sid,pi){
   pg.label=v('e_label');pg.dipl=v('e_dipl');
   pg.read.de=v('e_rde');pg.read.en=v('e_ren');pg.read.pl=v('e_rpl');
   EDITS.g[sid+'|'+pi]={label:pg.label,dipl:pg.dipl,read:pg.read};
-  const ok=saveEdits();EDITCOUNT=Object.keys(EDITS.p).length+Object.keys(EDITS.g).length;
+  const ok=saveEdits();EDITCOUNT=editCount();
   closeModal();render();
   toast(ok?t(UI.savedOk):t(UI.savedFail),ok);
 }
 function dataExport(){
-  const data={version:1,archive:'wessling',persons:PERSONS,sources:SOURCES,events:EVENTS,narratives:NARRATIVES};
+  const data={version:2,archive:'wessling',persons:PERSONS,sources:SOURCES,events:EVENTS,narratives:NARRATIVES,photos:window.PHOTOS||[],imgsNew:(EDITS&&EDITS.imgs)||{}};
   const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='wessling-archiv-daten.json';a.click();
@@ -1552,6 +1575,8 @@ function dataImport(){
       if(d.sources){SOURCES.length=0;SOURCES.push(...d.sources);}
       if(d.events){EVENTS.length=0;EVENTS.push(...d.events);}
       if(d.narratives){NARRATIVES.length=0;NARRATIVES.push(...d.narratives);}
+      if(d.photos){window.PHOTOS=window.PHOTOS||[];PHOTOS.length=0;PHOTOS.push(...d.photos);}
+      if(d.imgsNew&&typeof IMGS!=='undefined'){for(const k in d.imgsNew)IMGS[k]=d.imgsNew[k];}
       alert(t(UI.adminImported));render();
     }catch(e){alert('Import: '+e.message);}};
     r.readAsText(inp.files[0]);};
@@ -1768,9 +1793,86 @@ function openPhoto(k){
   document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
    <div class="modal" style="max-width:780px;text-align:center"><img src="${IMGS[k]}" style="max-width:100%;max-height:68vh;border-radius:4px">
    ${ph?`<p class="meta" style="margin-top:8px">${ph.cap}${ph.persons&&ph.persons.length?'<br>'+ph.persons.map(i=>P(i)?`<a onclick="closeModal();go('person','${i}')">${P(i).name}</a>`:'').filter(Boolean).join(' · '):''}</p>`:''}
-   <div class="btn-row" style="justify-content:center"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button></div></div></div>`;
+   <div class="btn-row" style="justify-content:center"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>${ADMIN&&ph?`<button class="btn" onclick="photoAssignDlg('${k}')">🛠 ${t(UI.phAssign)}</button>`:''}</div></div></div>`;
 }
 function closeModal(){document.getElementById('modalHost').innerHTML='';}
+
+/* ---------- Admin: Fotos hochladen & zuordnen ---------- */
+let PHSEL=[];
+function phPersonDatalist(){return `<datalist id="phNames">${PERSONS.map(p=>`<option value="${eq(p.name)}">`).join('')}</datalist>`;}
+function phChips(){return PHSEL.map((id,ix)=>{const p=P(id);return p?`<span style="display:inline-block;background:#efe6d2;border:1px solid var(--line);border-radius:12px;padding:2px 10px;margin:2px;font-size:13px">${p.name} <a style="cursor:pointer;font-weight:700" onclick="phRemove(${ix})">✕</a></span>`:'';}).join('')||`<span class="meta">—</span>`;}
+function phRemove(ix){PHSEL.splice(ix,1);const el=document.getElementById('phChips');if(el)el.innerHTML=phChips();phPortraitSel();}
+function phAdd(){const inp=document.getElementById('phNameInp');if(!inp)return;const v=inp.value.trim().toLowerCase();if(!v)return;
+  const p=PERSONS.find(x=>x.name.toLowerCase()===v)||PERSONS.find(x=>x.name.toLowerCase().startsWith(v))||PERSONS.find(x=>x.name.toLowerCase().includes(v));
+  if(p&&!PHSEL.includes(p.id)){PHSEL.push(p.id);}
+  inp.value='';const el=document.getElementById('phChips');if(el)el.innerHTML=phChips();phPortraitSel();}
+function phPortraitSel(){const sel=document.getElementById('phPortrait');if(!sel)return;const cur=sel.value;
+  sel.innerHTML=`<option value="">${t(UI.phNone)}</option>`+PHSEL.map(id=>{const p=P(id);return p?`<option value="${id}" ${cur===id?'selected':''}>${eq(p.name)}</option>`:'';}).join('');}
+function phResize(file,cb){const img=new Image();const url=URL.createObjectURL(file);
+  img.onload=()=>{const MAX=700;let w=img.naturalWidth,h=img.naturalHeight;
+    if(w>MAX||h>MAX){const f=MAX/Math.max(w,h);w=Math.round(w*f);h=Math.round(h*f);}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    URL.revokeObjectURL(url);cb(c.toDataURL('image/jpeg',0.85));};
+  img.onerror=()=>{URL.revokeObjectURL(url);toast(t(UI.savedFail),false);};
+  img.src=url;}
+function photoAddDlg(pid){
+  PHSEL=pid&&P(pid)?[pid]:[];window._phData=null;
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:560px;max-height:86vh;overflow:auto"><h3>📷 ${t(UI.phAdd)}</h3>
+   <label class="elab">${t(UI.phFile)}</label>
+   <input class="ein" id="phFile" type="file" accept="image/*">
+   <div id="phPrev" style="margin:8px 0"></div>
+   ${efield('phCap',UI.phCaption,'')}
+   <label class="elab">${t(UI.phPersons)}</label>
+   <div id="phChips" style="margin:4px 0">${phChips()}</div>
+   <input class="ein" id="phNameInp" list="phNames" placeholder="${t(UI.phAddPerson)}" onkeydown="if(event.key==='Enter'){event.preventDefault();phAdd();}" onchange="phAdd()">${phPersonDatalist()}
+   <label class="elab">${t(UI.phPortraitOf)}</label>
+   <select class="ein" id="phPortrait"></select>
+   <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+   <button class="btn" onclick="photoAddSave()">${t(UI.adminSave)}</button></div></div></div>`;
+  phPortraitSel();if(pid){const sel=document.getElementById('phPortrait');if(sel&&!P(pid).img)sel.value=pid;}
+  document.getElementById('phFile').onchange=function(){if(this.files&&this.files[0]){phResize(this.files[0],du=>{window._phData=du;document.getElementById('phPrev').innerHTML=`<img src="${du}" style="max-width:180px;max-height:180px;border-radius:4px;border:1px solid var(--line)">`;});}};
+}
+function photoAddSave(){
+  if(!window._phData){toast(t(UI.phFile),false);return;}
+  const k='phx'+Date.now().toString(36);
+  EDITS.imgs[k]=window._phData;
+  EDITS.ph[k]={cap:document.getElementById('phCap').value,persons:PHSEL.slice()};
+  IMGS[k]=window._phData;
+  window.PHOTOS=window.PHOTOS||[];PHOTOS.push({k:k,file:'admin-upload',cap:EDITS.ph[k].cap,persons:PHSEL.slice()});
+  const por=document.getElementById('phPortrait').value;
+  if(por&&P(por)){EDITS.pimg[por]=k;P(por).img=k;}
+  const ok=saveEdits();EDITCOUNT=editCount();
+  closeModal();render();
+  toast(ok?t(UI.savedOk):t(UI.savedFail),ok);
+}
+function photoAssignDlg(k){
+  const ph=(window.PHOTOS||[]).find(x=>x.k===k);if(!ph)return;
+  PHSEL=(ph.persons||[]).slice();
+  document.getElementById('modalHost').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()">
+   <div class="modal" style="max-width:560px;max-height:86vh;overflow:auto"><h3>🛠 ${t(UI.phAssign)}</h3>
+   <img src="${IMGS[k]}" style="max-width:180px;max-height:180px;border-radius:4px;border:1px solid var(--line);margin:6px 0">
+   ${efield('phCap',UI.phCaption,ph.cap||'')}
+   <label class="elab">${t(UI.phPersons)}</label>
+   <div id="phChips" style="margin:4px 0">${phChips()}</div>
+   <input class="ein" id="phNameInp" list="phNames" placeholder="${t(UI.phAddPerson)}" onkeydown="if(event.key==='Enter'){event.preventDefault();phAdd();}" onchange="phAdd()">${phPersonDatalist()}
+   <label class="elab">${t(UI.phPortraitOf)}</label>
+   <select class="ein" id="phPortrait"></select>
+   <div class="btn-row"><button class="btn ghost" onclick="closeModal()">${t(UI.close)}</button>
+   <button class="btn" onclick="photoAssignSave('${k}')">${t(UI.adminSave)}</button></div></div></div>`;
+  phPortraitSel();
+}
+function photoAssignSave(k){
+  const ph=(window.PHOTOS||[]).find(x=>x.k===k);if(!ph)return;
+  ph.cap=document.getElementById('phCap').value;ph.persons=PHSEL.slice();
+  EDITS.ph[k]={cap:ph.cap,persons:ph.persons.slice()};
+  const por=document.getElementById('phPortrait').value;
+  if(por&&P(por)){EDITS.pimg[por]=k;P(por).img=k;}
+  const ok=saveEdits();EDITCOUNT=editCount();
+  closeModal();render();
+  toast(ok?t(UI.savedOk):t(UI.savedFail),ok);
+}
 
 /* ---------- shell ---------- */
 function render(){
