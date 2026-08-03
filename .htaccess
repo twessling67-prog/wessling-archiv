@@ -10,3 +10,12 @@ DirectoryIndex index.php index.html
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 </IfModule>
+
+# 3) Eine Adresse für alle: www.wessling-family.com dauerhaft auf
+#    wessling-family.com umleiten. Wichtig, damit Browser-Speicher
+#    (gemerktes Passwort, Admin-Änderungen) immer am selben Ort liegt.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+</IfModule>
